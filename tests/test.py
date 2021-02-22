@@ -84,7 +84,7 @@ class TestMostFreqPayloadRatio(unittest.TestCase):
     def test_most_freq_payload_ratio_1(self):
         # Given
         plugins = [MostFreqPayloadLenRatio()]
-        pcap_filepath = './pcaps/http_most_freq_payload_ratio_simgle.pcap'
+        pcap_filepath = './pcaps/http_most_freq_payload_ratio_single.pcap'
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamer

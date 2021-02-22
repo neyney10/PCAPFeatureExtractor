@@ -209,4 +209,5 @@ $RECYCLE.BIN/
 .vscode
 __pycache__
 *.csv
-pcaps
+pcaps/
+!tests/pcaps/
