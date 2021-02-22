@@ -1,0 +1,55 @@
+'''
+Note: 
+    Requires python 3
+    Requires linux (can use WSL)
+    Doesn't work with pcapng suffix files, only pcap suffixes 
+        work around is just rename the suffix from pcapng to pcap.
+
+Using Scapy library as a complement for NFStream such as parsing DNS packets
+'''
+
+
+from plugins.n_pkts_byte_freq import NPacketsByteFrequency
+from plugins.first_packet_payload import FirstPacketPayloadLen
+from plugins.most_freq_payload_len_ratio import MostFreqPayloadLenRatio
+from plugins.dns_counter import DNSCounter
+from plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
+from plugins.pkt_rel_time import PacketRelativeTime
+from plugins.res_req_diff_time import ResReqDiffTime
+from plugins.byte_freq import ByteFrequency
+from flows_processor import FlowsProcessor
+from nfstream import NFStreamer  # https://www.nfstream.org/docs/api
+
+# possible files:
+# './pcaps/tls.pcap' 
+# "./pcaps/DoH-Firefox84-NextDNS-1.pcap"
+# "./pcaps/merged.pcap"
+# "./tests/pcaps/dns_1.pcap"
+# "./pcaps/vpn_vimeo_B.pcap"
+pcap_filepath = "./pcaps/DoH-Firefox84-NextDNS-1.pcap"
+bpf_filter_string = None
+plugins = [DNSCounter(),
+           FirstPacketPayloadLen(),
+           MostFreqPayloadLenRatio(),
+           NPacketsByteFrequency(n_first_packets=6),
+           PacketRelativeTime(),
+           SmallPacketPayloadRatio(),
+           ResReqDiffTime()]
+           
+my_streamer = NFStreamer(source=pcap_filepath,
+                         decode_tunnels=True,
+                         bpf_filter=bpf_filter_string,
+                         promiscuous_mode=True,
+                         snapshot_length=1536,
+                         idle_timeout=1,
+                         active_timeout=1,
+                         accounting_mode=3,
+                         udps=plugins,
+                         n_dissections=20,
+                         statistical_analysis=True,
+                         splt_analysis=0,
+                         n_meters=0,
+                         performance_report=0)
+
+fp = FlowsProcessor(my_streamer)
+fp.process()
