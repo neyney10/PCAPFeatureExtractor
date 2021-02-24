@@ -20,10 +20,12 @@ class ResReqDiffTime(NFPlugin):
             flow.udps.current_flow_direction_timestamp = packet.time
 
     def on_expire(self, flow):
-        flow.udps.req_res_time_diff.append(flow.bidirectional_last_seen_ms - flow.udps.current_flow_direction_timestamp)
+        '''flow.udps.req_res_time_diff.append(flow.bidirectional_last_seen_ms
+                                           - flow.udps.current_flow_direction_timestamp)'''
         
         # Cleanup
         del flow.udps.current_flow_direction_timestamp
         del flow.udps.current_flow_direction
+
 
 

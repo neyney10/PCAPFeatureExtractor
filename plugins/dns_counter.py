@@ -19,6 +19,10 @@ class DNSCounter(NFPlugin):
         dns_response_hypens_coun 
         dns_response_dots_count
         dns_response_ip_count
+    Prefixes:
+        bidirectional_
+        src2dst_
+        dst2src_
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
