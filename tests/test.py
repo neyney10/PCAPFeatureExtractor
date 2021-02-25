@@ -95,6 +95,10 @@ class TestMostFreqPayloadRatio(unittest.TestCase):
                         3/5)
         self.assertEqual(flow_at_test.udps.dst2src_most_freq_payload_ratio, 
                         3/4)
+        self.assertEqual(flow_at_test.udps.dst2src_most_freq_payload_len, 
+                        0)
+        self.assertEqual(flow_at_test.udps.src2dst_most_freq_payload_len, 
+                        0)
 
 
 class TestSmallPacketPayloadRatio(unittest.TestCase):
@@ -111,6 +115,12 @@ class TestSmallPacketPayloadRatio(unittest.TestCase):
         self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
         self.assertEqual(flow_at_test.udps.src2dst_small_packet_payload_ratio, 
                         2/9)
+        self.assertEqual(flow_at_test.udps.src2dst_small_packet_payload_packets, 
+                        2)
+        self.assertEqual(flow_at_test.udps.dst2src_small_packet_payload_ratio, 
+                        4/6)
+        self.assertEqual(flow_at_test.udps.dst2src_small_packet_payload_packets, 
+                        4)
 
 
 class TestPacketRelativeTime(unittest.TestCase):
@@ -161,9 +171,9 @@ class TestReqResDiffTimePlugin(unittest.TestCase):
         # Then
         flow_at_test = flows[0]
         self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
-        self.assertEqual(len(flow_at_test.udps.req_res_time_diff), 44)
+        self.assertEqual(len(flow_at_test.udps.req_res_time_diff), 43)
         avg = np.average(flow_at_test.udps.req_res_time_diff)
-        self.assertAlmostEqual(avg, 21482, delta=1)
+        self.assertAlmostEqual(avg, 21981, delta=1)
             
             
     def test_stream_req_res_diff_time_2(self):
@@ -175,9 +185,9 @@ class TestReqResDiffTimePlugin(unittest.TestCase):
         # Then / Assert
         flow_at_test = flows[0]
         self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
-        self.assertEqual(len(flow_at_test.udps.req_res_time_diff), 8)
+        self.assertEqual(len(flow_at_test.udps.req_res_time_diff), 7)
         avg = np.average(flow_at_test.udps.req_res_time_diff)
-        self.assertAlmostEqual(avg, 469, delta=0.5)
+        self.assertAlmostEqual(avg, 536, delta=0.5)
 
 
 

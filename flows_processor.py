@@ -1,4 +1,3 @@
-from plugins.nflow_combiner import NFlowCombiner
 from hosts_processor import HostsProcessor
 from stats.stats import IterableStats, StatsCollection
 from nfstream import NFStreamer
@@ -13,7 +12,7 @@ class FlowsProcessor:
     def process(self):
         byte_count = 0
         flows = 0
-        nfc = NFlowCombiner()
+
         byte_frequency = np.zeros(256)
         prt_stats_list = list()
 
@@ -23,7 +22,6 @@ class FlowsProcessor:
         
         for flow in self.streamer:
             flows += 1
-            nfc.add_flow(flow)
             byte_count += np.sum(flow.udps.bidirectional_n_packets_byte_frequency)
             byte_frequency += flow.udps.bidirectional_n_packets_byte_frequency
             prts    = IterableStats(flow.udps.packet_relative_times)

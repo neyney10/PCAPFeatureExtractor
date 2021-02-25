@@ -1,4 +1,5 @@
 
+from hosts_processor import HostsProcessor
 from plugins.asn_info import ASNInfo
 from plugins.n_pkts_byte_freq import NPacketsByteFrequency
 from plugins.first_packet_payload import FirstPacketPayloadLen
@@ -8,7 +9,7 @@ from plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
 from plugins.pkt_rel_time import PacketRelativeTime
 from plugins.res_req_diff_time import ResReqDiffTime
 from nfstream import NFStreamer  # https://www.nfstream.org/docs/api
-
+from os import path
 
 class Extractor:
     def __init__(self, input_pcap_filepath, output_dirpath) -> None:
@@ -18,6 +19,7 @@ class Extractor:
     def extract(self):
         bpf_filter_string = None  
         plugins = self._plugins()
+        # Time-windowed flows
         my_streamer = NFStreamer(source=self.input_pcap_filepath,
                                 decode_tunnels=True,
                                 bpf_filter=bpf_filter_string,
@@ -33,8 +35,8 @@ class Extractor:
                                 n_meters=0,
                                 performance_report=0)
 
-        my_streamer.to_csv(self.output_dirpath+'/out-timed-flows.csv', columns_to_anonymize=[])
-
+        my_streamer.to_csv(path.join(self.output_dirpath,'out-timed-flows.csv'), columns_to_anonymize=[])
+        # Sessions
         session_streamer = NFStreamer(source=self.input_pcap_filepath,
                                 decode_tunnels=True,
                                 bpf_filter=bpf_filter_string,
@@ -49,9 +51,11 @@ class Extractor:
                                 splt_analysis=0,
                                 n_meters=0,
                                 performance_report=0)
+        sessions_df = session_streamer.to_pandas(columns_to_anonymize=[])
+        sessions_df.to_csv(path.join(self.output_dirpath,'out-sessions.csv'))
+        # Hosts
+        HostsProcessor(sessions_df, self.output_dirpath).process()
 
-        session_streamer.to_csv(self.output_dirpath+'/out-sessions.csv', columns_to_anonymize=[])
-        
     def _plugins(self):
         return [ASNInfo(),
                 DNSCounter(),

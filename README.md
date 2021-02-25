@@ -6,27 +6,46 @@ Flow model (Joy, NFStream)
 
 ## Install
 ### Dependencies
-- OS: Linux (Tested with WSL Ubuntu 18.04)
-- Python 3.6.1+
-- NFStream (works only on linux)
-- pandas
-- numpy
-- scapy 2.4.4 (for parsing higher level protocols such as DNS)
-- pyasn (for ASN info, requires two additional DBs)
-- functools (for caching functions results)
-- click (for CLI)
+- Platform:
+    - OS: Linux (Tested with WSL Ubuntu 18.04)
+    - Version: Python 3.6.1+
+
+- Python modules:
+    - NFStream (works only on linux)
+    - pandas
+    - numpy
+    - scapy 2.4.4 (for parsing higher level protocols such as DNS)
+    - pyasn (for ASN info, requires two additional DBs)
+    - functools (for caching functions results)
+    - click (for CLI)
+    - unittest (for tests)
+
+- 3rd party tools (that need to be installed):
+    - Cisco Joy (for extracting TLS information), Note that you need to configure the path to Cisco Joy executable file in `./tools/config.json` file by updating the `CiscoJoyPath` key.
+
+- 3rd party data files (provided in `./tools` directory)
+    - pyasn.db (ASN mapping database)
+    - ip2asn.tsv (ASN context info database)
+
 
 ### Run Tests
-
+Go to `tests` directory:
+```
+cd ./tests
+```
+And then execute `test.py`:
+```
+python3 test.py
+```
 ## How To Use
-Launch ```cli.py``` using Python3 with the following flags:
+Launch `cli.py` using Python3 with the following flags:
 
 Flags:
 - --input \<PCAP filepath\>
 - --output \<output directory path\>
 ### Example 1
-For input pcap named ```DoH-Firefox84-first-100-sec.pcap``` in subdirectory of ```pcaps```
-and output extracted features to ```temp``` subdirectory, make sure that the output subdirectory exists beforehand.
+For input pcap named `DoH-Firefox84-first-100-sec.pcap` in subdirectory of `pcaps`
+and output extracted features to `temp` subdirectory, make sure that the output subdirectory exists beforehand.
 ```
 python3 cli.py --input ./pcaps/DoH-Firefox84-first-100-sec.pcap --output ./temp
 ```
@@ -34,6 +53,9 @@ python3 cli.py --input ./pcaps/DoH-Firefox84-first-100-sec.pcap --output ./temp
 
 ## Exported File Format
 Multiple CSVs, one for each level in the hirearchy.
+- `out-timed-flows.csv`.
+- `out-sessions.csv`.
+- `out-hosts.csv`.
 
 ## Feature Hirearchy
 Please see the features table.

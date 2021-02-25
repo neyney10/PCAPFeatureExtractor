@@ -12,7 +12,7 @@ class ASNInfo(NFPlugin):
         DB required: 
             1. pyasn.db or equavalent, please see 'IPASN Data Files' section in: 
             https://github.com/hadiasghari/pyasn to aquire it.
-            2. tsv (tab separated values) db file of contextual info such as from https://iptoasn.com
+            2. TSV (tab separated values) DB file of contextual info such as from https://iptoasn.com
             
     Features:
         asn_number
@@ -60,7 +60,6 @@ class ASNInfo(NFPlugin):
     MAX_CACHED_RESULTS = 2**16
     @functools.lru_cache(maxsize=MAX_CACHED_RESULTS)
     def get_asn_info(self, ip_addr: str):
-        asn: str = ''
         asn_n,_ = self.pyasn_contextual_data.lookup(ip_addr)
         if asn_n != None:
             return self.as_contextual_data[self.as_contextual_data['AS_number'] == asn_n].iloc[0]

@@ -19,6 +19,7 @@ class DNSCounter(NFPlugin):
         dns_response_hypens_coun 
         dns_response_dots_count
         dns_response_ip_count
+        
     Prefixes:
         bidirectional_
         src2dst_
