@@ -1,4 +1,5 @@
 
+from tls_record_joy import TLSRecordJoy
 from hosts_processor import HostsProcessor
 from plugins.asn_info import ASNInfo
 from plugins.n_pkts_byte_freq import NPacketsByteFrequency
@@ -52,7 +53,8 @@ class Extractor:
                                 n_meters=0,
                                 performance_report=0)
         sessions_df = session_streamer.to_pandas(columns_to_anonymize=[])
-        sessions_df.to_csv(path.join(self.output_dirpath,'out-sessions.csv'))
+        sessions_df = TLSRecordJoy(self.input_pcap_filepath).execute_joy(sessions_df)
+        sessions_df.to_csv(path.join(self.output_dirpath,'out-sessions.csv'), index=False)
         # Hosts
         HostsProcessor(sessions_df, self.output_dirpath).process()
 

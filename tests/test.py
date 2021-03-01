@@ -54,6 +54,15 @@ class TestDNSCounter(unittest.TestCase):
         self.assertEqual(flow_at_test.udps.bidirectional_dns_response_hypens_count, 8)
         self.assertEqual(flow_at_test.udps.bidirectional_dns_response_dots_count,   9)
         self.assertEqual(flow_at_test.udps.bidirectional_dns_response_ip_count,     1)
+        self.assertEqual(flow_at_test.udps.bidirectional_dns_response_ttls_s, [3158, 23, 3]) # in seconds
+        self.assertEqual(flow_at_test.udps.bidirectional_median_dns_response_ttls_s, 23)
+        self.assertAlmostEqual(flow_at_test.udps.bidirectional_mean_dns_response_ttls_s, 1061.333, 3)
+        self.assertAlmostEqual(flow_at_test.udps.bidirectional_stdev_dns_response_ttls_s, 1482.5897, 3)
+        self.assertAlmostEqual(flow_at_test.udps.bidirectional_variance_dns_response_ttls_s, 2198072.2222, 3)
+        self.assertAlmostEqual(flow_at_test.udps.bidirectional_coeff_of_var_dns_response_ttls_s, 1.3969, 3)
+        self.assertAlmostEqual(flow_at_test.udps.bidirectional_skew_from_median_dns_response_ttls_s, 2.101, 3)
+        self.assertEqual(flow_at_test.udps.bidirectional_min_dns_response_ttls_s, 3)
+        self.assertEqual(flow_at_test.udps.bidirectional_max_dns_response_ttls_s, 3158)
         # src -> dst
         self.assertEqual(flow_at_test.udps.src2dst_dns_queries,   1)
         self.assertEqual(flow_at_test.udps.src2dst_dns_responses, 0)
@@ -66,6 +75,14 @@ class TestDNSCounter(unittest.TestCase):
         self.assertEqual(flow_at_test.udps.src2dst_dns_response_hypens_count, 0)
         self.assertEqual(flow_at_test.udps.src2dst_dns_response_dots_count,   0)
         self.assertEqual(flow_at_test.udps.src2dst_dns_response_ip_count,     0)
+        self.assertEqual(flow_at_test.udps.src2dst_dns_response_ttls_s, None) # in seconds
+        self.assertEqual(flow_at_test.udps.src2dst_mean_dns_response_ttls_s, None)
+        self.assertEqual(flow_at_test.udps.src2dst_stdev_dns_response_ttls_s, None)
+        self.assertEqual(flow_at_test.udps.src2dst_variance_dns_response_ttls_s, None)
+        self.assertEqual(flow_at_test.udps.src2dst_coeff_of_var_dns_response_ttls_s, None)
+        self.assertEqual(flow_at_test.udps.src2dst_skew_from_median_dns_response_ttls_s, None)
+        self.assertEqual(flow_at_test.udps.src2dst_min_dns_response_ttls_s, None)
+        self.assertEqual(flow_at_test.udps.src2dst_max_dns_response_ttls_s, None)
         # dst -> src
         self.assertEqual(flow_at_test.udps.dst2src_dns_queries,   0)
         self.assertEqual(flow_at_test.udps.dst2src_dns_responses, 1)
@@ -78,6 +95,14 @@ class TestDNSCounter(unittest.TestCase):
         self.assertEqual(flow_at_test.udps.dst2src_dns_response_hypens_count, 8)
         self.assertEqual(flow_at_test.udps.dst2src_dns_response_dots_count,   9)
         self.assertEqual(flow_at_test.udps.dst2src_dns_response_ip_count,     1)
+        self.assertEqual(flow_at_test.udps.dst2src_dns_response_ttls_s, [3158, 23, 3]) # in seconds
+        self.assertAlmostEqual(flow_at_test.udps.dst2src_mean_dns_response_ttls_s, 1061.333, 3)
+        self.assertAlmostEqual(flow_at_test.udps.dst2src_stdev_dns_response_ttls_s, 1482.5897, 3)
+        self.assertAlmostEqual(flow_at_test.udps.dst2src_variance_dns_response_ttls_s, 2198072.2222, 3)
+        self.assertAlmostEqual(flow_at_test.udps.dst2src_coeff_of_var_dns_response_ttls_s, 1.3969, 3)
+        self.assertAlmostEqual(flow_at_test.udps.dst2src_skew_from_median_dns_response_ttls_s, 2.101, 3)
+        self.assertEqual(flow_at_test.udps.dst2src_min_dns_response_ttls_s, 3)
+        self.assertEqual(flow_at_test.udps.dst2src_max_dns_response_ttls_s, 3158)
 
 class TestMostFreqPayloadRatio(unittest.TestCase):
 

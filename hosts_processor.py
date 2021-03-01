@@ -2,6 +2,9 @@ import ast
 import pandas as pd
 import os
 from enum import Enum
+import numpy as np
+from pandas.core.groupby.generic import DataFrameGroupBy
+
 
 class Protocol(Enum):
     TCP=6
@@ -18,6 +21,10 @@ class HostsProcessor:
         self.output_dirpath = output_dirpath
 
     def process(self):
+        '''
+        Note: code here can be optimized both in terms of performance and memory consumption.
+        But at the moment, readability is preferable.
+        '''
         # output dataframe
         out_df = pd.DataFrame()
         # pre proccessing to df
@@ -42,6 +49,18 @@ class HostsProcessor:
         # received/sent packets ratio by host
         recv_sent_packets_ratio = received_packets / sent_packets
         out_df['recv_sent_packets_ratio'] = recv_sent_packets_ratio
+        # average of packets sent in sessions by host
+        sent_mean_packets_per_sessions = self._host(self.df, 'src2dst_packets', 'dst2src_packets').mean().squeeze()
+        out_df['sent_mean_packets_per_sessions'] = sent_mean_packets_per_sessions
+        # median of packets sent in sessions by host
+        sent_median_packets_per_sessions = self._host(self.df, 'src2dst_packets', 'dst2src_packets').median().squeeze()
+        out_df['sent_median_packets_per_sessions'] = sent_median_packets_per_sessions
+        # std deviation of packets sent in sessions by host
+        sent_stdev_packets_per_sessions = self._host(self.df, 'src2dst_packets', 'dst2src_packets').std().squeeze()
+        out_df['sent_stdev_packets_per_sessions'] = sent_stdev_packets_per_sessions
+        # std deviation of packets sent in sessions by host
+        sent_var_packets_per_sessions = self._host(self.df, 'src2dst_packets', 'dst2src_packets').var().squeeze()
+        out_df['sent_variance_packets_per_sessions'] = sent_var_packets_per_sessions
         # bytes sent
         sent_bytes = self._host(self.df, 'src2dst_bytes', 'dst2src_bytes').sum().squeeze()
         out_df['sent_bytes'] = sent_bytes
@@ -77,6 +96,9 @@ class HostsProcessor:
         # number of small packets to the number of sent packets ratio
         sent_small_pkt_payload_ratio = sent_small_pkt_payload_packets / sent_packets
         out_df['sent_small_packet_payload_ratio'] = sent_small_pkt_payload_ratio
+        # number of total sessions
+        sessions = self._host(self.df, 'protocol', 'protocol').count().squeeze()
+        out_df['sessions'] = sessions
         # number of UDP sessions
         udp_sessions = self._host(self.df[self.df['protocol']==Protocol.UDP.value], 'protocol', 'protocol').count().squeeze()
         out_df['udp_sessions'] = udp_sessions
@@ -103,6 +125,8 @@ class HostsProcessor:
         # ratio of number DNS packets to number of packets sent
         sent_dns_packets_ratio = sent_dns_packets / sent_packets
         out_df['sent_dns_packets_ratio'] = sent_dns_packets_ratio
+
+        
 
         #save to file
         out_df.to_csv(os.path.join(self.output_dirpath, 'out-hosts.csv'))
@@ -142,6 +166,28 @@ class HostsProcessor:
                 dataframes.append(group)
 
         return pd.concat(dataframes).groupby(by='src_ip', as_index=True)
+    
+    def _stats(self, grouped_df: DataFrameGroupBy):
+        '''
+        Description:
+            Computes a pre-defined list of statistical functions
+            for a grouped dataframe (DataFrameGroupBy) object.
+            The statistical functions are:
+            - mean
+            - median
+            - std
+            - var
+            in that order.
+            
+        Example:
+            out_df[['mean', 'median', 'std', 'var']] = self._stats(grouped_df)
+        '''
+        return grouped_df.agg([
+            np.mean,
+            np.median,
+            np.std,
+            np.var
+        ])
     
     def _merge_dicts(self, dicts):
         ''' Merge dictionaries and keep values of common keys in list'''
