@@ -1,4 +1,6 @@
 from nfstream import NFPlugin
+import numpy as np 
+
 
 class MostFreqPayloadLenRatio(NFPlugin):
     '''
@@ -15,8 +17,10 @@ class MostFreqPayloadLenRatio(NFPlugin):
         '''
 
         flow.udps.src2dst_most_freq_payload_ratio = 0
-        flow.udps.dst2src_most_freq_payload_ratio = 0
+        flow.udps.src2dst_most_freq_payload_len   = None
         flow.udps.src2dst_payload_freq = dict()
+        flow.udps.dst2src_most_freq_payload_ratio = 0
+        flow.udps.dst2src_most_freq_payload_len   = None
         flow.udps.dst2src_payload_freq = dict()
 
         self.on_update(packet, flow)
@@ -33,8 +37,12 @@ class MostFreqPayloadLenRatio(NFPlugin):
 
     def on_expire(self, flow):
         if flow.src2dst_packets != 0:
-            most_freq_payload = max(flow.udps.src2dst_payload_freq.values())
-            flow.udps.src2dst_most_freq_payload_ratio = most_freq_payload / flow.src2dst_packets
+            freq_dict = flow.udps.src2dst_payload_freq
+            most_freq_payload_freq = max(freq_dict.values())
+            flow.udps.src2dst_most_freq_payload_len   = list(freq_dict.keys())[np.argmax(list(freq_dict.values()))]
+            flow.udps.src2dst_most_freq_payload_ratio = most_freq_payload_freq / flow.src2dst_packets
         if flow.dst2src_packets != 0:
-            most_freq_payload = max(flow.udps.dst2src_payload_freq.values())
-            flow.udps.dst2src_most_freq_payload_ratio = most_freq_payload / flow.dst2src_packets
+            freq_dict = flow.udps.dst2src_payload_freq
+            most_freq_payload_freq = max(freq_dict.values())
+            flow.udps.dst2src_most_freq_payload_len   = list(freq_dict.keys())[np.argmax(list(freq_dict.values()))]
+            flow.udps.dst2src_most_freq_payload_ratio = most_freq_payload_freq / flow.dst2src_packets

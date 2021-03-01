@@ -19,21 +19,25 @@ class SmallPacketPayloadRatio(NFPlugin):
         '''
         on_init(self, packet, flow): Method called at flow creation.
         '''
-
-        flow.udps.src2dst_small_packet_payload_ratio = 0
-        flow.udps.dst2src_small_packet_payload_ratio = 0
+        flow.udps.src2dst_small_packet_payload_packets = 0
+        flow.udps.src2dst_small_packet_payload_ratio   = 0
+        flow.udps.dst2src_small_packet_payload_packets = 0
+        flow.udps.dst2src_small_packet_payload_ratio   = 0
+        
 
         self.on_update(packet, flow)
 
     def on_update(self, packet, flow):
         if packet.payload_size < self.small_size:
             if packet.direction == 0: # src2dst
-                flow.udps.src2dst_small_packet_payload_ratio += 1
+                flow.udps.src2dst_small_packet_payload_packets += 1
             else:
-                flow.udps.dst2src_small_packet_payload_ratio += 1
+                flow.udps.dst2src_small_packet_payload_packets += 1
 
     def on_expire(self, flow):
         if flow.src2dst_packets != 0:
-            flow.udps.src2dst_small_packet_payload_ratio /= flow.src2dst_packets
+            flow.udps.src2dst_small_packet_payload_ratio = (flow.udps.src2dst_small_packet_payload_packets 
+                                                            / flow.src2dst_packets)
         if flow.dst2src_packets != 0:
-            flow.udps.dst2src_small_packet_payload_ratio /= flow.dst2src_packets
+            flow.udps.dst2src_small_packet_payload_ratio = (flow.udps.dst2src_small_packet_payload_packets
+                                                            / flow.dst2src_packets)

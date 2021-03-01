@@ -24,6 +24,12 @@ class Stats: # INTERFACE
 
     def skew_from_mode(self):
         pass 
+    
+    def min(self):
+        pass
+    
+    def max(self):
+        pass
 
 
 class StatsCollection(Stats): 
@@ -57,6 +63,12 @@ class StatsCollection(Stats):
 
     def skew_from_mode(self):
         pass 
+    
+    def min(self) -> float:
+        return np.min(self.values)
+    
+    def max(self) -> float:
+        return np.max(self.values)
 
 class IterableStats(Stats):
     '''
@@ -90,5 +102,17 @@ class IterableStats(Stats):
     def skew_from_mode(self) -> float:
         #  Skew =  (Mean – Mode) / Standard Deviation
         return (self.average() - self.mode()) / self.std_deviation()
+    
+    def min(self):
+        if len(self.values) > 0:
+            return np.min(self.values)
+        else:
+            return None
+    
+    def max(self):
+        if len(self.values) > 0:
+            return np.max(self.values)
+        else:
+            return None
 
        
