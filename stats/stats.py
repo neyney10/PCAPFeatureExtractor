@@ -93,15 +93,24 @@ class IterableStats(Stats):
         return np.std(self.values)
 
     def coeff_of_variation(self) -> float:
-        return self.std_deviation() / self.average()
+        if self.average() != 0:
+            return self.std_deviation() / self.average()
+        else:
+            return None
 
     def skew_from_median(self) -> float:
         #  Skew = 3 * (Mean – Median) / Standard Deviation
-        return 3 * (self.average() - self.median()) / self.std_deviation()
+        if self.std_deviation() != 0:
+            return 3 * (self.average() - self.median()) / self.std_deviation()
+        else:
+            return None
 
     def skew_from_mode(self) -> float:
         #  Skew =  (Mean – Mode) / Standard Deviation
-        return (self.average() - self.mode()) / self.std_deviation()
+        if self.std_deviation() != 0:
+            return (self.average() - self.mode()) / self.std_deviation()
+        else:
+            return None
     
     def min(self):
         if len(self.values) > 0:

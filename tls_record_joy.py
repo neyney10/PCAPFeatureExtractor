@@ -5,10 +5,13 @@ import hashlib
 import os
 import json
 
+
 class TLSRecordJoy():
     '''
     '''
-    def __init__(self, pcap_filepath, config_filepath='./tools/config.json', output_filepath='./temp/tls-cisco-joy.json', **kwargs):
+    # Note that in Joy, the output path is always relative, i.e, it appends './' before the given filepath.
+    def __init__(self, pcap_filepath, config_filepath=os.path.join(os.path.dirname(__file__), 'tools/config.json'), 
+                 output_filepath='tls-cisco-joy.json', **kwargs):
         super().__init__(**kwargs)
         self.pcap_filepath = pcap_filepath
         self.config_filepath = config_filepath
@@ -16,22 +19,19 @@ class TLSRecordJoy():
 
     def execute_joy(self, nfstream_sessions_df):
         joy_config = self._read_joy_config_file()
-        
-        pcap_filepath = 'DoH-Firefox84-NextDNS-1-pcap-format.pcap'
-        output_filepath = self.output_filepath
-        
         joy_command = ' '.join([joy_config['CiscoJoyPath'], 
                                 'preemptive_timeout=0', 
                                 'bidir=1', 
                                 'tls=1', 
-                                'output='+output_filepath, 
-                                os.path.join('./pcaps', pcap_filepath)])
-        
+                                'output='+self.output_filepath, 
+                                self.pcap_filepath])
+        print(joy_command)
         res = os.system(joy_command)
         if res != 0 :
             raise Exception('[3rd-party tool] Cisco Joy didnt execute succesfully')
         
         joy_df = self._read_joy_output().reset_index()
+        os.remove(self.output_filepath)
         nfstream_sessions_df['hashed_session_id'] = nfstream_sessions_df.apply(self._five_tuple, axis=1)
         nfstream_sessions_df.reset_index()
         
