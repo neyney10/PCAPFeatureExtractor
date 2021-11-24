@@ -1,6 +1,6 @@
 # used for byte frequency analysis
 
-from stats.stats import IterableStats
+from stats.stats import IterableStats, WeightedIterableStats
 from nfstream import NFPlugin
 import numpy as np # for bytes distribution
 
@@ -42,12 +42,12 @@ class NPacketsByteFrequency(NFPlugin):
         Todo: zero and nan checks.
         '''
         # Normalize frequencies to get distribution
-        bidirectional_n_packets_byte_distribution = flow.udps.bidirectional_n_packets_byte_frequency / np.sum(flow.udps.bidirectional_n_packets_byte_frequency)
-        src2dst_n_packets_byte_distribution       = flow.udps.src2dst_n_packets_byte_frequency / np.sum(flow.udps.src2dst_n_packets_byte_frequency)
-        dst2src_n_packets_byte_distribution       = flow.udps.dst2src_n_packets_byte_frequency / np.sum(flow.udps.dst2src_n_packets_byte_frequency)
+        bidirectional_n_packets_byte_distribution = flow.udps.bidirectional_n_packets_byte_frequency # / np.sum(flow.udps.bidirectional_n_packets_byte_frequency)
+        src2dst_n_packets_byte_distribution       = flow.udps.src2dst_n_packets_byte_frequency # / np.sum(flow.udps.src2dst_n_packets_byte_frequency)
+        dst2src_n_packets_byte_distribution       = flow.udps.dst2src_n_packets_byte_frequency # / np.sum(flow.udps.dst2src_n_packets_byte_frequency)
         # Compute statistical features
         # bidirectional
-        bidirectional_stats = IterableStats(bidirectional_n_packets_byte_distribution)
+        bidirectional_stats = WeightedIterableStats(np.arange(0,256), bidirectional_n_packets_byte_distribution)
         flow.udps.bidirectional_mean_n_packets_byte_distribution             = bidirectional_stats.average()
         flow.udps.bidirectional_stdev_n_packets_byte_distribution            = bidirectional_stats.std_deviation()
         flow.udps.bidirectional_median_n_packets_byte_distribution           = bidirectional_stats.median()
@@ -55,7 +55,7 @@ class NPacketsByteFrequency(NFPlugin):
         flow.udps.bidirectional_coeff_of_var_n_packets_byte_distribution     = bidirectional_stats.coeff_of_variation()
         flow.udps.bidirectional_skew_from_median_n_packets_byte_distribution = bidirectional_stats.skew_from_median()
         # src -> dst
-        src2dst_stats = IterableStats(src2dst_n_packets_byte_distribution)
+        src2dst_stats = WeightedIterableStats(np.arange(0,256), src2dst_n_packets_byte_distribution)
         flow.udps.src2dst_mean_n_packets_byte_distribution             = src2dst_stats.average()
         flow.udps.src2dst_stdev_n_packets_byte_distribution            = src2dst_stats.std_deviation()
         flow.udps.src2dst_median_n_packets_byte_distribution           = src2dst_stats.median()
@@ -63,7 +63,7 @@ class NPacketsByteFrequency(NFPlugin):
         flow.udps.src2dst_coeff_of_var_n_packets_byte_distribution     = src2dst_stats.coeff_of_variation()
         flow.udps.src2dst_skew_from_median_n_packets_byte_distribution = src2dst_stats.skew_from_median()
         # dst -> src
-        dst2src_stats = IterableStats(dst2src_n_packets_byte_distribution)
+        dst2src_stats = WeightedIterableStats(np.arange(0,256), dst2src_n_packets_byte_distribution)
         flow.udps.dst2src_mean_n_packets_byte_distribution             = dst2src_stats.average()
         flow.udps.dst2src_stdev_n_packets_byte_distribution            = dst2src_stats.std_deviation()
         flow.udps.dst2src_median_n_packets_byte_distribution           = dst2src_stats.median()

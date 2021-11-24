@@ -8,7 +8,6 @@ Note:
 Using Scapy library as a complement for NFStream such as parsing DNS packets
 '''
 
-
 from plugins.asn_info import ASNInfo
 from sessions_processor import SessionsProcessor
 from plugins.n_pkts_byte_freq import NPacketsByteFrequency
@@ -19,6 +18,7 @@ from plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
 from plugins.pkt_rel_time import PacketRelativeTime
 from plugins.res_req_diff_time import ResReqDiffTime
 from plugins.byte_freq import ByteFrequency
+from plugins.graypic import GrayPic1
 from flows_processor import FlowsProcessor
 from nfstream import NFStreamer  # https://www.nfstream.org/docs/api
 
@@ -27,8 +27,8 @@ from nfstream import NFStreamer  # https://www.nfstream.org/docs/api
 # "./pcaps/DoH-Firefox84-NextDNS-1.pcap"
 # "./pcaps/merged.pcap"
 # "./tests/pcaps/dns_1.pcap"
-# "./pcaps/vpn_vimeo_B.pcap"
-pcap_filepath = "./pcaps/DoH-Firefox84-first-100-sec.pcap"
+# "./pcaps/DoH-Firefox84-first-100-sec.pcap"
+pcap_filepath = "./pcaps/DoH-Firefox84-NextDNS-1.pcap"
 bpf_filter_string = None
 plugins = [ASNInfo(),
            DNSCounter(),
