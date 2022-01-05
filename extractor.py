@@ -15,6 +15,9 @@ from plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
 from plugins.pkt_rel_time import PacketRelativeTime
 from plugins.res_req_diff_time import ResReqDiffTime
 from plugins.graypic import GrayPic1
+from plugins.protocol_header_fields import ProtocolHeaderFields
+from plugins.n_bytes import NBytes
+from plugins.stnn import STNN
 from nfstream import NFStreamer  # https://www.nfstream.org/docs/api
 from os import path
 #from guppy import hpy; h=hpy()
@@ -60,7 +63,7 @@ class Extractor:
                                 snapshot_length=1536,
                                 idle_timeout=999999999,
                                 active_timeout=999999999,
-                                accounting_mode=3,
+                                accounting_mode=0,
                                 udps=plugins,
                                 n_dissections=20,
                                 statistical_analysis=True,
@@ -92,5 +95,8 @@ class Extractor:
             SmallPacketPayloadRatio(),
             ResReqDiffTime(),
             Clump_Flow(),
-            Packets_size_and_interarrival_time()
+            Packets_size_and_interarrival_time(),
+            ProtocolHeaderFields(20),
+            NBytes(),
+            STNN(20)
         ]

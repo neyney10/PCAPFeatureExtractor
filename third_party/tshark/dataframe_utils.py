@@ -15,7 +15,7 @@ def merge_df_by_biflows(df_tshark, df_nfstream):
 
 
 def read_tshark_csv_output(filepath):
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(filepath, dtype={'tls.record.length': str})
     return df
 
 
@@ -65,7 +65,13 @@ def add_packet_directions_column(df):
         )
         
     grouped = groupby_biflows(df)
-    df['direction'] = grouped.apply(get_packet_direction).droplevel(0)
+    temp = grouped.apply(get_packet_direction)
+    #print(temp.index)
+    if temp.index.nlevels > 1:
+        temp = temp.droplevel(0)
+    else:
+        temp = temp.iloc[0]
+    df['direction'] = temp
     return df
 
 
@@ -91,7 +97,13 @@ def add_packet_clump_num_column(df):
         return pd.Series(clump_nums, dtype=object, index=df_indices)
     
     grouped = groupby_biflows(df)
-    df['clump_num'] = grouped.apply(get_clump_nums).droplevel(0)
+    temp = grouped.apply(get_clump_nums)
+    #print(temp.index)
+    if temp.index.nlevels > 1:
+        temp = temp.droplevel(0)
+    else:
+        temp = temp.iloc[0]
+    df['clump_num'] = temp
     return df
 
 

@@ -61,8 +61,11 @@ class ASNInfo(NFPlugin):
     MAX_CACHED_RESULTS = 2**16
     @functools.lru_cache(maxsize=MAX_CACHED_RESULTS)
     def get_asn_info(self, ip_addr: str):
-        asn_n,_ = self.pyasn_contextual_data.lookup(ip_addr)
-        if asn_n != None:
-            return self.as_contextual_data[self.as_contextual_data['AS_number'] == asn_n].iloc[0]
+        try:
+            asn_n,_ = self.pyasn_contextual_data.lookup(ip_addr)
+            if asn_n != None:
+                return self.as_contextual_data[self.as_contextual_data['AS_number'] == asn_n].iloc[0]
+        except:
+            pass
 
         return None
