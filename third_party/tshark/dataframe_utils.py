@@ -46,6 +46,10 @@ def convert_to_correct_dtypes(df):
     '''
     tls.record.length can be scalar/list, but it is represented as string at load.
     '''
+    if df['tls.record.length'].dtype != 'O':
+        # if it contains only scalars, pandas would recognize is the dtype
+        # as int64 instead of str/object.
+        df['tls.record.length'] = df['tls.record.length'].apply(str)
     df['tls.record.length'] = df['tls.record.length'].apply(ast.literal_eval)
     df['tls.record.length']
     return df
@@ -65,7 +69,18 @@ def add_packet_directions_column(df):
         )
         
     grouped = groupby_biflows(df)
-    df['direction'] = grouped.apply(get_packet_direction).droplevel(0)
+    directions = grouped.apply(get_packet_direction)
+    if directions.index.nlevels == 1:
+        ''' if there is only a single session, then pandas
+        converts the packet number to columns '''
+        directions = directions.transpose()
+    else: 
+        ''' There should be a multindex of fiveuple id string
+        along with he packet number, so we remove the fivuple.
+        '''
+        directions = directions.droplevel(0)
+    df['direction'] = directions
+    
     return df
 
 
@@ -91,7 +106,18 @@ def add_packet_clump_num_column(df):
         return pd.Series(clump_nums, dtype=object, index=df_indices)
     
     grouped = groupby_biflows(df)
-    df['clump_num'] = grouped.apply(get_clump_nums).droplevel(0)
+    clump_nums = grouped.apply(get_clump_nums)
+    if clump_nums.index.nlevels == 1:
+        ''' if there is only a single session, then pandas
+        converts the packet number to columns '''
+        clump_nums = clump_nums.transpose()
+    else: 
+        ''' There should be a multindex of fiveuple id string
+        along with he packet number, so we remove the fivuple.
+        '''
+        clump_nums = clump_nums.droplevel(0)
+    df['clump_num'] = clump_nums
+    
     return df
 
 

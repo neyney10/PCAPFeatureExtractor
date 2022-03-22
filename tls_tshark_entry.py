@@ -13,7 +13,10 @@ def extract_tls_features_and_merge(df_nfstream, pcap_filepath, config_filepath):
     config = _read_config_file(config_filepath)
     tls_features_per_session = _extract_tls_features(pcap_filepath, config['tshark_location'])
     print('Read and merge dataframe of TShark with NFStream', datetime.now().strftime("%H:%M:%S"))
-    df = merge_df_by_biflows(tls_features_per_session, df_nfstream)
+    if tls_features_per_session is None:
+        df = df_nfstream
+    else:
+        df = merge_df_by_biflows(tls_features_per_session, df_nfstream)
     print('Exiting 3rd-party: TShark for TLS...', datetime.now().strftime("%H:%M:%S"))
     return df
 
@@ -27,12 +30,15 @@ def _extract_tls_features(pcap_filepath, tshark_location):
     print('Reading Tshark CSV output as Pandas Dataframe', datetime.now().strftime("%H:%M:%S"))
     df = read_tshark_csv_output(tshark_output_filepath)
     df = drop_lengthless_tls_records(df)
-    df = convert_to_correct_dtypes(df)
-    df = add_packet_directions_column(df)
-    df = add_packet_clump_num_column(df)
-    record_tls_per_session = get_tls_record_stats(df)
-    clump_stats_per_session = get_tls_clump_stats(df)
-    tls_features_per_session = record_tls_per_session.join(clump_stats_per_session)
+    if df.empty:
+        tls_features_per_session = None
+    else:   
+        df = convert_to_correct_dtypes(df)
+        df = add_packet_directions_column(df)
+        df = add_packet_clump_num_column(df)
+        record_tls_per_session = get_tls_record_stats(df)
+        clump_stats_per_session = get_tls_clump_stats(df)
+        tls_features_per_session = record_tls_per_session.join(clump_stats_per_session)
 
     os.remove(tshark_output_filepath)
 

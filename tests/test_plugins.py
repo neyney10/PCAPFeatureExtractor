@@ -3,8 +3,8 @@
 import unittest
 import sys
 sys.path.append('../')
-from plugins.n_pkts_byte_freq import NPacketsByteFrequency
 from nfstream import NFStreamer
+from plugins.n_pkts_byte_freq import NPacketsByteFrequency
 from plugins.dns_counter import DNSCounter
 from plugins.most_freq_payload_len_ratio import MostFreqPayloadLenRatio
 from plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
@@ -12,11 +12,222 @@ from plugins.res_req_diff_time import ResReqDiffTime
 from plugins.pkt_rel_time import PacketRelativeTime
 from plugins.clump_flows import Clump_Flow
 from plugins.packets_size_interarrival_time import Packets_size_and_interarrival_time
+from plugins.n_bytes import NBytes
 import numpy as np
 
 '''
     Testing NFStream Plugins
                             '''
+
+
+
+class TestNBytes(unittest.TestCase):
+
+    def test_100_bytes_udp_dns_single_packet(self):
+        # Given
+        plugins = [NBytes(n=100)]
+        pcap_filepath = './pcaps/dns_2_single_response_packet.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 100)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [
+                183, 237, 129, 128, 0, 1, 0, 3, 0, 0, 0, 0, 3, 110, 97, 118,
+                11, 115, 109, 97, 114, 116, 115, 99, 114, 101, 101, 110, 9, 109, 105, 99,
+                114, 111, 115, 111, 102, 116, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192,
+                12, 0, 5, 0, 1, 0, 0, 12, 86, 0, 31, 10, 119, 100, 45, 112,
+                114, 111, 100, 45, 115, 115, 14, 116, 114, 97, 102, 102, 105, 99, 109, 97,
+                110, 97, 103, 101, 114, 3, 110, 101, 116, 0, 192, 59, 0, 5, 0, 1,
+                0, 0, 0, 23
+            ],
+        )
+        
+    def test_200_bytes_udp_dns_single_packet(self):
+        # Given
+        plugins = [NBytes(n=200)]
+        pcap_filepath = './pcaps/dns_2_single_response_packet.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 170)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 170 payload bytes
+                183, 237, 129, 128, 0, 1, 0, 3, 0, 0, 0, 0, 3, 110, 97, 118,
+                11, 115, 109, 97, 114, 116, 115, 99, 114, 101, 101, 110, 9, 109, 105, 99,
+                114, 111, 115, 111, 102, 116, 3, 99, 111, 109, 0, 0, 1, 0, 1, 192,
+                12, 0, 5, 0, 1, 0, 0, 12, 86, 0, 31, 10, 119, 100, 45, 112,
+                114, 111, 100, 45, 115, 115, 14, 116, 114, 97, 102, 102, 105, 99, 109, 97,
+                110, 97, 103, 101, 114, 3, 110, 101, 116, 0, 192, 59, 0, 5, 0, 1,
+                0, 0, 0, 23, 0, 52, 23, 119, 100, 45, 112, 114, 111, 100, 45, 115,
+                115, 45, 101, 117, 45, 119, 101, 115, 116, 45, 49, 45, 102, 101, 10, 119,
+                101, 115, 116, 101, 117, 114, 111, 112, 101, 8, 99, 108, 111, 117, 100, 97,
+                112, 112, 5, 97, 122, 117, 114, 101, 192, 38, 192, 102, 0, 1, 0, 1,
+                0, 0, 0, 3, 0, 4, 51, 144, 113, 175, 
+            ] + [ # padding 30 bytes
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # 16 bytes
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,       # 14 bytes
+            ], 
+        )
+        
+    def test_184_bytes_udp_dhcpv6(self):
+        # Given
+        plugins = [NBytes(n=184)]
+        pcap_filepath = './pcaps/dhcpv6_request_single.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 184)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 200 payload bytes
+                4, 103, 247, 192, 0, 8, 0, 2, 0, 0, 0, 1, 0, 14, 0, 1,
+                0, 1, 23, 81, 195, 34, 8, 0, 39, 60, 141, 201, 0, 3, 0, 40,
+                14, 8, 0, 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 24,
+                253, 45, 171, 140, 2, 37, 0, 0, 0, 0, 0, 0, 0, 0, 9, 148,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 14, 0, 0, 1, 55,
+                0, 8, 77, 83, 70, 84, 32, 53, 46, 48, 0, 6, 0, 6, 0, 24,
+                0, 23, 0, 17, 1, 171, 159, 127, 0, 8, 0, 2, 0, 0, 0, 1,
+                0, 14, 0, 1, 0, 1, 23, 81, 195, 34, 8, 0, 39, 60, 141, 201,
+                0, 3, 0, 12, 14, 8, 0, 39, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 39, 0, 6, 0, 4, 87, 73, 78, 49, 0, 16, 0, 14, 0, 0,
+                1, 55, 0, 8, 77, 83, 70, 84, 32, 53, 46, 48, 0, 6, 0, 8,
+                0, 24, 0, 23, 0, 17, 0, 39,
+            ]
+        )
+        
+    def test_200_bytes_udp_snmp_ipv6(self):
+        # Given
+        plugins = [NBytes(n=200)]
+        pcap_filepath = './pcaps/snmp_ipv6_single.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 200)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 200 payload bytes
+                48, 62, 2, 1, 3, 48, 17, 2, 4, 41, 205, 177, 122, 2, 3, 0,
+                255, 207, 4, 1, 4, 2, 1, 3, 4, 16, 48, 14, 4, 0, 2, 1,
+                0, 2, 1, 0, 4, 0, 4, 0, 4, 0, 48, 20, 4, 0, 4, 0,
+                160, 14, 2, 4, 96, 186, 16, 246, 2, 1, 0, 2, 1, 0, 48, 0,
+                48, 121, 2, 1, 3, 48, 17, 2, 4, 41, 205, 177, 122, 2, 3, 0,
+                255, 207, 4, 1, 0, 2, 1, 3, 4, 38, 48, 36, 4, 20, 128, 0,
+                79, 77, 177, 170, 220, 173, 188, 137, 175, 250, 17, 141, 189, 83, 130, 76,
+                107, 5, 2, 1, 3, 2, 3, 1, 10, 29, 4, 0, 4, 0, 4, 0,
+                48, 57, 4, 20, 128, 0, 79, 77, 177, 170, 220, 173, 188, 137, 175, 250,
+                17, 141, 189, 83, 130, 76, 107, 5, 4, 0, 168, 31, 2, 4, 96, 186,
+                16, 246, 2, 1, 0, 2, 1, 0, 48, 17, 48, 15, 6, 10, 43, 6,
+                1, 6, 3, 15, 1, 1, 4, 0, 65, 1, 4, 48, 129, 144, 2, 1,
+                3, 48, 17, 2, 4, 41, 205, 177,
+            ],
+        )
+        
+    def test_100_bytes_tcp_tls_single_packet(self):
+        # Given
+        plugins = [NBytes(n=100)]
+        pcap_filepath = './pcaps/tls_client_hello_single_packet.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 100)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 100 payload bytes
+                22, 3, 1, 2, 0, 1, 0, 1, 252, 3, 3, 251, 155, 115, 218, 63,
+                184, 40, 134, 145, 47, 235, 103, 119, 243, 70, 243, 216, 30, 130, 0, 27,
+                249, 234, 186, 31, 2, 62, 63, 69, 107, 16, 11, 32, 234, 24, 167, 248,
+                121, 83, 159, 124, 136, 56, 104, 182, 35, 253, 199, 120, 115, 130, 161, 42,
+                62, 135, 150, 65, 113, 200, 150, 92, 180, 1, 218, 51, 0, 36, 19, 1,
+                19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48,
+                192, 10, 192, 9
+            ],
+        )
+        
+    def test_16_bytes_tcp_ack_empty_single_packet(self):
+        # Given
+        plugins = [NBytes(n=16)]
+        pcap_filepath = './pcaps/tcp_ack_single_packet.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 0)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # Empty payload of TCP ACK packet.
+            ] + [ # 16 padding bytes.
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ],
+        )
+        
+    def test_16_bytes_tcp_syn_empty_single_packet(self):
+        # Given
+        plugins = [NBytes(n=16)]
+        pcap_filepath = './pcaps/tcp_syn_single_packet.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 0)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # Empty payload of TCP SYN packet.
+            ] + [ # 16 padding bytes.
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ],
+        )
+        
+    def test_300_bytes_tcp_http(self):
+        # Given
+        plugins = [NBytes(n=300)]
+        pcap_filepath = './pcaps/http_most_freq_payload_ratio_single.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 300)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 300 payload bytes
+                71, 69, 84, 32, 47, 115, 117, 99, 99, 101, 115, 115, 46, 116, 120, 116,
+                32, 72, 84, 84, 80, 47, 49, 46, 49, 13, 10, 72, 111, 115, 116, 58,
+                32, 100, 101, 116, 101, 99, 116, 112, 111, 114, 116, 97, 108, 46, 102, 105,
+                114, 101, 102, 111, 120, 46, 99, 111, 109, 13, 10, 85, 115, 101, 114, 45,
+                65, 103, 101, 110, 116, 58, 32, 77, 111, 122, 105, 108, 108, 97, 47, 53,
+                46, 48, 32, 40, 87, 105, 110, 100, 111, 119, 115, 32, 78, 84, 32, 49,
+                48, 46, 48, 59, 32, 87, 105, 110, 54, 52, 59, 32, 120, 54, 52, 59,
+                32, 114, 118, 58, 56, 52, 46, 48, 41, 32, 71, 101, 99, 107, 111, 47,
+                50, 48, 49, 48, 48, 49, 48, 49, 32, 70, 105, 114, 101, 102, 111, 120,
+                47, 56, 52, 46, 48, 13, 10, 65, 99, 99, 101, 112, 116, 58, 32, 42,
+                47, 42, 13, 10, 65, 99, 99, 101, 112, 116, 45, 76, 97, 110, 103, 117,
+                97, 103, 101, 58, 32, 101, 110, 45, 85, 83, 44, 101, 110, 59, 113, 61,
+                48, 46, 53, 13, 10, 65, 99, 99, 101, 112, 116, 45, 69, 110, 99, 111,
+                100, 105, 110, 103, 58, 32, 103, 122, 105, 112, 44, 32, 100, 101, 102, 108,
+                97, 116, 101, 13, 10, 67, 97, 99, 104, 101, 45, 67, 111, 110, 116, 114,
+                111, 108, 58, 32, 110, 111, 45, 99, 97, 99, 104, 101, 13, 10, 80, 114,
+                97, 103, 109, 97, 58, 32, 110, 111, 45, 99, 97, 99, 104, 101, 13, 10,
+                67, 111, 110, 110, 101, 99, 116, 105, 111, 110, 58, 32, 107, 101, 101, 112,
+                45, 97, 108, 105, 118, 101, 13, 10, 13, 10, 72, 84
+            ],
+        )
+
+
 
 class TestClumpsPlugin(unittest.TestCase):
     def setUp(self):
@@ -516,6 +727,8 @@ class TestDNSCounter(unittest.TestCase):
         self.assertEqual(flow_at_test.udps.dst2src_min_dns_response_ttls_s, 3)
         self.assertEqual(flow_at_test.udps.dst2src_max_dns_response_ttls_s, 3158)
 
+
+
 class TestMostFreqPayloadRatio(unittest.TestCase):
 
     def test_most_freq_payload_ratio_1(self):
@@ -538,6 +751,7 @@ class TestMostFreqPayloadRatio(unittest.TestCase):
                         0)
 
 
+
 class TestSmallPacketPayloadRatio(unittest.TestCase):
 
     def test_small_pkt_payload_ratio_1(self):
@@ -558,6 +772,7 @@ class TestSmallPacketPayloadRatio(unittest.TestCase):
                         4/6)
         self.assertEqual(flow_at_test.udps.dst2src_small_packet_payload_packets, 
                         4)
+
 
 
 class TestPacketRelativeTime(unittest.TestCase):
@@ -602,7 +817,7 @@ class TestPacketRelativeTime(unittest.TestCase):
         self.assertAlmostEqual(flow_at_test.udps.dst2src_variance_packet_relative_times, 2529945653.25)
         self.assertAlmostEqual(flow_at_test.udps.dst2src_coeff_of_var_packet_relative_times, 0.7441661937)
         self.assertAlmostEqual(flow_at_test.udps.dst2src_skew_from_median_packet_relative_times, 0.0012226988)
-        
+
 
 
 class TestByteFrequencyPlugin(unittest.TestCase):
@@ -619,7 +834,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
         self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
         
         self.assertEqual(flow_at_test.udps.n_packets_byte_frequency_value, 1)
-        self.assertEqual(list(flow_at_test.udps.bidirectional_n_packets_byte_frequency), 
+        self.assertSequenceEqual(list(flow_at_test.udps.bidirectional_n_packets_byte_frequency), 
             [
                 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
                 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1,
@@ -640,7 +855,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
         self.assertAlmostEqual(flow_at_test.udps.bidirectional_variance_n_packets_byte_distribution, 5922.217687074)
         self.assertAlmostEqual(flow_at_test.udps.bidirectional_coeff_of_var_n_packets_byte_distribution, 0.7224295371)
         self.assertAlmostEqual(flow_at_test.udps.bidirectional_skew_from_median_n_packets_byte_distribution, 0.3712699265)
-        self.assertEqual(list(flow_at_test.udps.src2dst_n_packets_byte_frequency), 
+        self.assertSequenceEqual(list(flow_at_test.udps.src2dst_n_packets_byte_frequency), 
             [
                 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
                 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1,
@@ -661,7 +876,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
         self.assertAlmostEqual(flow_at_test.udps.src2dst_variance_n_packets_byte_distribution, 5922.217687074)
         self.assertAlmostEqual(flow_at_test.udps.src2dst_coeff_of_var_n_packets_byte_distribution, 0.7224295371)
         self.assertAlmostEqual(flow_at_test.udps.src2dst_skew_from_median_n_packets_byte_distribution, 0.3712699265)
-        self.assertEqual(list(flow_at_test.udps.dst2src_n_packets_byte_frequency), 
+        self.assertSequenceEqual(list(flow_at_test.udps.dst2src_n_packets_byte_frequency), 
             [
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -695,7 +910,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
         self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
         
         self.assertEqual(flow_at_test.udps.n_packets_byte_frequency_value, 2)
-        self.assertEqual(list(flow_at_test.udps.bidirectional_n_packets_byte_frequency), 
+        self.assertSequenceEqual(list(flow_at_test.udps.bidirectional_n_packets_byte_frequency), 
             [
                 2, 2, 2, 2, 1, 2, 2, 1, 2, 1, 2, 1, 1, 1, 2, 2, 1, 0, 1, 1, 1, 2,
                 0, 2, 2, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 2, 0, 2, 1, 0, 1, 1, 1,
@@ -717,7 +932,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
         self.assertAlmostEqual(flow_at_test.udps.bidirectional_variance_n_packets_byte_distribution, 5931.55312314)
         self.assertAlmostEqual(flow_at_test.udps.bidirectional_coeff_of_var_n_packets_byte_distribution, 0.66212615)
         self.assertAlmostEqual(flow_at_test.udps.bidirectional_skew_from_median_n_packets_byte_distribution, 0.207114106)
-        self.assertEqual(list(flow_at_test.udps.src2dst_n_packets_byte_frequency), 
+        self.assertSequenceEqual(list(flow_at_test.udps.src2dst_n_packets_byte_frequency), 
             [
                 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
                 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1,
@@ -738,7 +953,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
         self.assertAlmostEqual(flow_at_test.udps.src2dst_variance_n_packets_byte_distribution, 5922.217687074)
         self.assertAlmostEqual(flow_at_test.udps.src2dst_coeff_of_var_n_packets_byte_distribution, 0.7224295371)
         self.assertAlmostEqual(flow_at_test.udps.src2dst_skew_from_median_n_packets_byte_distribution, 0.3712699265)
-        self.assertEqual(list(flow_at_test.udps.dst2src_n_packets_byte_frequency), 
+        self.assertSequenceEqual(list(flow_at_test.udps.dst2src_n_packets_byte_frequency), 
             [
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1,
                 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1,
@@ -761,7 +976,6 @@ class TestByteFrequencyPlugin(unittest.TestCase):
         self.assertAlmostEqual(flow_at_test.udps.dst2src_skew_from_median_n_packets_byte_distribution, 0.06505311668)
         
             
-
 
 class TestReqResDiffTimePlugin(unittest.TestCase):
     def setUp(self):
