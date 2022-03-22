@@ -15,7 +15,7 @@ def merge_df_by_biflows(df_tshark, df_nfstream):
 
 
 def read_tshark_csv_output(filepath):
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(filepath, dtype={'tls.record.length': str})
     return df
 
 
@@ -73,7 +73,7 @@ def add_packet_directions_column(df):
     if directions.index.nlevels == 1:
         ''' if there is only a single session, then pandas
         converts the packet number to columns '''
-        directions = directions.transpose()
+        directions = directions.iloc[0]
     else: 
         ''' There should be a multindex of fiveuple id string
         along with he packet number, so we remove the fivuple.
@@ -81,6 +81,7 @@ def add_packet_directions_column(df):
         directions = directions.droplevel(0)
     df['direction'] = directions
     
+
     return df
 
 
@@ -110,14 +111,14 @@ def add_packet_clump_num_column(df):
     if clump_nums.index.nlevels == 1:
         ''' if there is only a single session, then pandas
         converts the packet number to columns '''
-        clump_nums = clump_nums.transpose()
+        clump_nums = clump_nums.iloc[0]
     else: 
         ''' There should be a multindex of fiveuple id string
         along with he packet number, so we remove the fivuple.
         '''
         clump_nums = clump_nums.droplevel(0)
     df['clump_num'] = clump_nums
-    
+
     return df
 
 
