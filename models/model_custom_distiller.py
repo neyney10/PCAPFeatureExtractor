@@ -6,56 +6,6 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import *
 
 
-def stack(layers):
-    '''
-    Using the Functional-API of Tensorflow to build a sequential
-    network (stacked layers) from list of layers.
-    '''
-    layer_stack = None
-    for layer in layers:
-        if layer_stack is None:
-            layer_stack = layer
-        else:
-            layer_stack = layer(layer_stack)
-    return layer_stack
-
-
-def get_adapter_layers(adapter_size):
-    return [
-        Dropout(0.2),
-        Dense(adapter_size),
-        ReLU()
-    ]
-
-
-def wrap_adapter(model, adapter_size):
-    return stack([model.output, *get_adapter_layers(adapter_size)])
-
-
-def wrap_adapter_multi(models, adapter_size):
-    return [wrap_adapter(model, adapter_size) for model in models]
-
-
-def get_sr_layers(adapter_size):
-    # SR = Shared Representation
-    return [
-        Dropout(0.2),
-        Dense(adapter_size),
-        ReLU(),
-        Dropout(0.2),
-    ]
-
-
-def get_ts_layers(classes_count, adapter_size):
-    # TS = Task Specific
-    return [
-        Dense(adapter_size),
-        ReLU(),
-        Dropout(0.2),
-        Dense(classes_count),
-        Softmax()
-    ]
-
 
 
 class CustomDistiller(Model):
@@ -101,7 +51,7 @@ class CustomDistiller(Model):
             assert nclass >= 1
         
         # adapter_size must be positive.
-        assert len(self.adapter_size) >= 1
+        assert self.adapter_size >= 1
 
 
     def get_model_for_pretraining(self, model):
@@ -154,3 +104,60 @@ class CustomDistiller(Model):
         self.model.fit(x,y, **kwargs)
 
         self.unfreeze_for_finetuning()
+
+
+
+###################
+# Model utilities #
+###################
+
+
+def stack(layers):
+    '''
+    Using the Functional-API of Tensorflow to build a sequential
+    network (stacked layers) from list of layers.
+    '''
+    layer_stack = None
+    for layer in layers:
+        if layer_stack is None:
+            layer_stack = layer
+        else:
+            layer_stack = layer(layer_stack)
+    return layer_stack
+
+
+def get_adapter_layers(adapter_size):
+    return [
+        Dropout(0.2),
+        Dense(adapter_size),
+        ReLU()
+    ]
+
+
+def wrap_adapter(model, adapter_size):
+    return stack([model.output, *get_adapter_layers(adapter_size)])
+
+
+def wrap_adapter_multi(models, adapter_size):
+    return [wrap_adapter(model, adapter_size) for model in models]
+
+
+def get_sr_layers(adapter_size):
+    # SR = Shared Representation
+    return [
+        Dropout(0.2),
+        Dense(adapter_size),
+        ReLU(),
+        Dropout(0.2),
+    ]
+
+
+def get_ts_layers(classes_count, adapter_size):
+    # TS = Task Specific
+    return [
+        Dense(adapter_size),
+        ReLU(),
+        Dropout(0.2),
+        Dense(classes_count),
+        Softmax()
+    ]
