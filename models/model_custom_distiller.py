@@ -4,16 +4,6 @@ import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.WARN)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import *
-from tensorflow.keras.constraints import max_norm
-import numpy as np
-
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.metrics import confusion_matrix, accuracy_score,f1_score,recall_score,precision_score,roc_auc_score
-import ast
-import pandas as pd
-from utils import load_data
 
 
 def stack(layers):
