@@ -104,6 +104,66 @@ class TestNBytes(unittest.TestCase):
             ]
         )
         
+    def test_100_bytes_udp_skype_eth_padding(self):
+        '''
+        This is a test for a bug. Due to old limitations, the minimum len of
+        a frame is 64 bytes, in case that the frame is shorter than 64 bytes
+        the ethernet header is padding zeros at the END of the packet 
+        (and not where the ethernet header is located in the packet structure).
+        '''
+        # Given
+        plugins = [NBytes(n=100)]
+        pcap_filepath = './pcaps/udp_skype_eth_padding_single.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 100)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 100 payload bytes
+                172, 60, 93, 81, 25, 29, 184, 133, 29, 137, 173, 248, 90, 74, 67, 173,
+                147, 12, 198, 146, 181, 13, 199, 111, 134, 3, 218, 74, 8, 168, 167, 32,
+                201, 190, 29, 168, 194, 149, 52, 132, 237, 205, 88, 102, 166, 17, 14, 118,
+                17, 22, 225, 242, 127, 17, 3, 19, 95, 154, 167, 208, 127, 43, 64, 92,
+                9, 81, 71, 124, 194, 225, 77, 108, 9, 23, 168, 69, 69, 101, 136, 135,
+                125, 88, 183, 120, 38, 183, 126, 186, 4, 227, 178, 151, 80, 18, 237, 70, 
+                45, 252, 152, 182, 
+            ]
+        )
+        
+    def test_120_bytes_udp_skype_eth_padding(self):
+        '''
+        This is a test for a bug. Due to old limitations, the minimum len of
+        a frame is 64 bytes, in case that the frame is shorter than 64 bytes
+        the ethernet header is padding zeros at the END of the packet 
+        (and not where the ethernet header is located in the packet structure).
+        '''
+        # Given
+        plugins = [NBytes(n=120)]
+        pcap_filepath = './pcaps/udp_skype_eth_padding_single.pcap'
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 106)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 106 payload bytes
+                172, 60, 93, 81, 25, 29, 184, 133, 29, 137, 173, 248, 90, 74, 67, 173,
+                147, 12, 198, 146, 181, 13, 199, 111, 134, 3, 218, 74, 8, 168, 167, 32,
+                201, 190, 29, 168, 194, 149, 52, 132, 237, 205, 88, 102, 166, 17, 14, 118,
+                17, 22, 225, 242, 127, 17, 3, 19, 95, 154, 167, 208, 127, 43, 64, 92,
+                9, 81, 71, 124, 194, 225, 77, 108, 9, 23, 168, 69, 69, 101, 136, 135,
+                125, 88, 183, 120, 38, 183, 126, 186, 4, 227, 178, 151, 80, 18, 237, 70,
+                45, 252, 152, 182, 61, 40, 105, 156, 184, 237,
+            ] + [ # 14 padding bytes
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # 14 bytes
+            ]
+        )
+        
     def test_200_bytes_udp_snmp_ipv6(self):
         # Given
         plugins = [NBytes(n=200)]
