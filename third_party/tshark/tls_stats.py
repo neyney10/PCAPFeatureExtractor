@@ -1,4 +1,4 @@
-from third_party.tshark.stats import IterableStats
+from .stats import IterableStats
 import pandas as pd
 import numpy as np
 
@@ -64,6 +64,16 @@ class TLSRecordStats:
             'dst2src_min_tls_record_size':              self.dst2src_len_stats.min(),
             'dst2src_max_tls_record_size':              self.dst2src_len_stats.max(),
         })
+    
+    @classmethod
+    def available_feature_names(cls):
+        return TLSRecordStats(
+            pd.DataFrame({
+                'tls.record.length': [],
+                'direction': []
+            })
+        ).length_stats().index.to_list()
+        
         
         
 class TLSRecordClumpStats:
@@ -156,4 +166,12 @@ class TLSRecordClumpStats:
             'dst2src_max_tls_clump_sizes':              self.dst2src_sizes_stats.max(),
         })
     
-    
+    @classmethod
+    def available_feature_names(cls):
+        return TLSRecordClumpStats(
+            pd.DataFrame({
+                'tls.record.length': [],
+                'direction': [],
+                'clump_num' : []
+            })
+        ).clump_stats().index.to_list()

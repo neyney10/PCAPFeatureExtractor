@@ -1,20 +1,24 @@
 from third_party.tshark.dataframe_utils import add_packet_clump_num_column, add_packet_directions_column, convert_to_correct_dtypes, drop_lengthless_tls_records, get_tls_clump_stats, get_tls_record_stats, groupby_biflows, merge_df_by_biflows, read_tshark_csv_output
+from third_party.tshark.tls_stats import TLSRecordClumpStats, TLSRecordStats
 import json
 from third_party.tshark.tshark import run_tshark_tls
 from datetime import datetime
 import os
+
 '''
 Meant to work under linux system.
 Tested with WSL ubuntu 18.04.
 TShark (Wireshark 3.4.1+)
 '''
 
-def extract_tls_features_and_merge(df_nfstream, pcap_filepath, config_filepath):
+def extract_tls_features_and_merge(df_nfstream, pcap_filepath, config_filepath,):
     config = _read_config_file(config_filepath)
     tls_features_per_session = _extract_tls_features(pcap_filepath, config['tshark_location'])
     print('Read and merge dataframe of TShark with NFStream', datetime.now().strftime("%H:%M:%S"))
     if tls_features_per_session is None:
-        df = df_nfstream
+        col_names = TLSRecordStats.available_feature_names() + TLSRecordClumpStats.available_feature_names()
+        df = df_nfstream.copy()
+        df[col_names] = None
     else:
         df = merge_df_by_biflows(tls_features_per_session, df_nfstream)
     print('Exiting 3rd-party: TShark for TLS...', datetime.now().strftime("%H:%M:%S"))
