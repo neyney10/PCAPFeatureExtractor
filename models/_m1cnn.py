@@ -4,16 +4,13 @@ import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.WARN)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout, Input
 from tensorflow.keras.models import Model
-import tensorflow.keras as K
 
 
 
-def M1CNN(payload_size=784, n_classes=2):
-    return _M1CNN(payload_size, n_classes).model
 
-
-class _M1CNN:
+class M1CNN(Model):
     def __init__(self, payload_size=784, n_classes=2) -> None:
+        super(M1CNN, self).__init__()
         input_layer = Input(shape=(payload_size,1))
         self.model = Model(
             name='M1CNN',
@@ -31,15 +28,16 @@ class _M1CNN:
             ])
         )
         
-        self.model.compile(
-            optimizer='adam',
-            loss=tf.keras.losses.CategoricalCrossentropy(),
-            metrics=[
-                tf.keras.metrics.CategoricalAccuracy(),
-                tf.keras.metrics.Recall(),
-                tf.keras.metrics.Precision()
-            ]
-        )
+        '''
+        optimizer='adam',
+        loss=tf.keras.losses.CategoricalCrossentropy(),
+        '''
+        
+        
+    def call(self, inputs, training=None):
+        # See: https://www.tensorflow.org/guide/keras/custom_layers_and_models#the_model_class
+        return self.model(inputs, training)
+
 
 
 ###################

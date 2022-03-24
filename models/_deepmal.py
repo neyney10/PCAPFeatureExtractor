@@ -8,12 +8,10 @@ import tensorflow.keras as K
 
 
 
-def DeepMALRawFlows(payload_size=100, packet_count=2, n_classes=2):
-    return _DeepMALRawFlows(payload_size, packet_count, n_classes).model
 
-
-class _DeepMALRawFlows:
+class DeepMALRawFlows(Model):
     def __init__(self, payload_size=100, packet_count=2, n_classes=2) -> None:
+        super(DeepMALRawFlows, self).__init__()
         input_layer = Input(shape=(packet_count, payload_size))
         self.model = Model(
             name='DeepMAL-Flows',
@@ -30,18 +28,18 @@ class _DeepMALRawFlows:
                 Dense(n_classes, activation='softmax') 
             ])
         )
-        
-        self.model.compile(
-            optimizer='adam',
-            loss=tf.keras.losses.CategoricalCrossentropy(),
-            metrics=[
-                tf.keras.metrics.CategoricalAccuracy(),
-                tf.keras.metrics.Recall(),
-                tf.keras.metrics.Precision()
-            ]
-        )
+
+        '''
+        optimizer='adam',
+        loss=tf.keras.losses.CategoricalCrossentropy(),
+        '''
     
     
+    def call(self, inputs, training=None):
+        # See: https://www.tensorflow.org/guide/keras/custom_layers_and_models#the_model_class
+        return self.model(inputs, training)
+
+
 
 ###################
 # Model utilities #
