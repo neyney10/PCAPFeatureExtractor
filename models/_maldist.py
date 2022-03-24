@@ -28,7 +28,6 @@ def wang_payload_modality(payload_size=784):
         inputs=input_layer_payload_modality,
         outputs=stack([
             input_layer_payload_modality,
-            BatchNormalization(),
             Conv1D(16, 25, name='Conv1D_payload_1'),
             ReLU(),
             MaxPooling1D(3, name='MaxPooling1D_payload_1'),
@@ -47,7 +46,6 @@ def lopez_protocol_header_fields_modality(packet_count=32):
         inputs=input_layer_protocol_fields_modality,
         outputs=stack([
             input_layer_protocol_fields_modality,
-            BatchNormalization(),
             Bidirectional(GRU(64, return_sequences=True, kernel_constraint=max_norm(3))),
             ReLU(),
             Flatten(),
@@ -62,7 +60,6 @@ def stnn_inspired_image_modality():
         inputs=input_layer_stnn_modality,
         outputs=stack([
             input_layer_stnn_modality,
-            BatchNormalization(),
             Bidirectional(LSTM(65,return_sequences=True)),
             Lambda(lambda x: expand_dims(x, axis=3)),
             Conv2D(32,3,padding='same'),
