@@ -7,23 +7,17 @@ from . import CustomDistiller
 
 
 
-class MalDist(Model):
-    def __init__(self, n_classes=[]) -> None:
-        super(MalDist, self).__init__()
-        self.model = CustomDistiller(
+class MalDist(CustomDistiller):
+    def __init__(self, payload_size=784, header_fields_packets=32, n_classes=[]) -> None:
+        super(MalDist, self).__init__(  
             modalities=[
-                wang_payload_modality(784),
-                lopez_protocol_header_fields_modality(32),
+                wang_payload_modality(payload_size),
+                lopez_protocol_header_fields_modality(header_fields_packets),
                 stnn_inspired_image_modality()
             ],
             adapter_size=128, 
             n_classes=n_classes
         )
-
-
-    def call(self, inputs, training=None):
-        # See: https://www.tensorflow.org/guide/keras/custom_layers_and_models#the_model_class
-        return self.model(inputs, training)
 
 
 

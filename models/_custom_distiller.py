@@ -60,7 +60,7 @@ class CustomDistiller(Model):
         for n_class in self.n_classes:
             outputs.append(stack([model_w_adapter, Dense(n_class, activation='softmax')]))
         return Model(
-            name='pretraining_model_' + model.name,
+            name='pretraining_model',
             inputs=model.input,
             outputs=outputs
         )
