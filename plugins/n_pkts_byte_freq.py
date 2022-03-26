@@ -1,6 +1,6 @@
 # used for byte frequency analysis
 
-from stats.stats import IterableStats, WeightedIterableStats
+from ..stats.stats import IterableStats, WeightedIterableStats
 from nfstream import NFPlugin
 import numpy as np # for bytes distribution
 
@@ -71,7 +71,11 @@ class NPacketsByteFrequency(NFPlugin):
         flow.udps.dst2src_coeff_of_var_n_packets_byte_distribution     = dst2src_stats.coeff_of_variation()
         flow.udps.dst2src_skew_from_median_n_packets_byte_distribution = dst2src_stats.skew_from_median()
         
+        flow.udps.bidirectional_n_packets_byte_frequency = flow.udps.bidirectional_n_packets_byte_frequency.tolist() 
+        flow.udps.src2dst_n_packets_byte_frequency = flow.udps.src2dst_n_packets_byte_frequency.tolist()
+        flow.udps.dst2src_n_packets_byte_frequency = flow.udps.dst2src_n_packets_byte_frequency.tolist()
         # Cleanup
+        
 
     def _add_payload_bytes_frequency(self, payload, container):
         payload_bytes_array = np.frombuffer(payload, dtype='B') # 'B' unsigned byte

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import ast
-from third_party.tshark.tls_stats import TLSRecordClumpStats, TLSRecordStats
+from .tls_stats import TLSRecordClumpStats, TLSRecordStats
 
 
 def merge_df_by_biflows(df_tshark, df_nfstream):

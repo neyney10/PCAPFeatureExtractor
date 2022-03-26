@@ -1,4 +1,4 @@
-from stats.stats import IterableStats
+from ..stats.stats import IterableStats
 from nfstream import NFPlugin
 
 

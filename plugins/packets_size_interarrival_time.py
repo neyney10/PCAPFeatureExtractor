@@ -1,8 +1,6 @@
 from runstats import *
 from nfstream import NFPlugin
 import numpy as np
-import statistics
-
 
 class Packets_size_and_interarrival_time(NFPlugin):
     '''

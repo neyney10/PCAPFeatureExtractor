@@ -2,24 +2,24 @@
 
 # from tls_record_joy import TLSRecordJoy
 
-from plugins.clump_flows import Clump_Flow
-from plugins.packets_size_interarrival_time import Packets_size_and_interarrival_time
-from tls_tshark_entry import extract_tls_features_and_merge
-from hosts_processor import HostsProcessor
-from plugins.asn_info import ASNInfo
-from plugins.n_pkts_byte_freq import NPacketsByteFrequency
-from plugins.first_packet_payload import FirstPacketPayloadLen
-from plugins.most_freq_payload_len_ratio import MostFreqPayloadLenRatio
-from plugins.dns_counter import DNSCounter
-from plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
-from plugins.pkt_rel_time import PacketRelativeTime
-from plugins.res_req_diff_time import ResReqDiffTime
-from plugins.graypic import GrayPic1
-from plugins.protocol_header_fields import ProtocolHeaderFields
-from plugins.n_bytes import NBytes
-from plugins.stnn import STNN
 from nfstream import NFStreamer  # https://www.nfstream.org/docs/api
 from os import path
+from .tls_tshark_entry import extract_tls_features_and_merge
+#from .hosts_processor import HostsProcessor
+from .plugins.clump_flows import Clump_Flow
+from .plugins.packets_size_interarrival_time import Packets_size_and_interarrival_time
+from .plugins.asn_info import ASNInfo
+from .plugins.n_pkts_byte_freq import NPacketsByteFrequency
+from .plugins.first_packet_payload import FirstPacketPayloadLen
+from .plugins.most_freq_payload_len_ratio import MostFreqPayloadLenRatio
+from .plugins.dns_counter import DNSCounter
+from .plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
+from .plugins.pkt_rel_time import PacketRelativeTime
+from .plugins.res_req_diff_time import ResReqDiffTime
+#from .plugins.graypic import GrayPic1
+from .plugins.protocol_header_fields import ProtocolHeaderFields
+from .plugins.n_bytes import NBytes
+from .plugins.stnn import STNN
 #from guppy import hpy; h=hpy()
 
 
