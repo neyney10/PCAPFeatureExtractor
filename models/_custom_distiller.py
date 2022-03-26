@@ -44,7 +44,6 @@ class CustomDistiller(Model):
 
     def compile(self, **kwargs):
         for model, compile_kwargs in zip(self.pretraining_models + [self.model], zip_dict(kwargs)):
-            print(compile_kwargs)
             model.compile(**compile_kwargs)
 
 
