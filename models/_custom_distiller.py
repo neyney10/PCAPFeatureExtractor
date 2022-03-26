@@ -33,11 +33,34 @@ class CustomDistiller(Model):
             inputs=[modal.input for modal in modalities],
             outputs= outputs
         )
+        
+        self.pretraining_models = [self.get_model_for_pretraining(modal) for modal in modalities]
 
 
     def call(self, inputs, training=None):
         # See: https://www.tensorflow.org/guide/keras/custom_layers_and_models#the_model_class
         return self.model(inputs, training)
+
+
+    def compile(self, **kwargs):
+        for model, compile_kwargs in zip(self.pretraining_models + [self.model], zip_dict(kwargs)):
+            print(compile_kwargs)
+            model.compile(**compile_kwargs)
+
+
+    def fit(self, x, y, **kwargs):
+        kwargs_per_fit = list(zip_dict(kwargs))
+    
+        for features, model, fit_kwargs in zip(x, self.pretraining_models, kwargs_per_fit):
+            print('##################### {} ##########################'.format(model.name.upper()))
+            model.fit(features, y, **fit_kwargs)
+
+        # FINE-TUNE
+        print('##################### FINE-TUNING ##########################')
+        fit_kwargs = kwargs_per_fit[len(self.modalities)]
+        self.freeze_for_finetuning()
+        self.model.fit(x,y, **fit_kwargs)
+        self.unfreeze_for_finetuning()
 
 
     def _validate(self):
@@ -71,39 +94,13 @@ class CustomDistiller(Model):
             for layer in modal.layers:
                 layer.trainable = False
 
-  
+
     def unfreeze_for_finetuning(self):
         for modal in self.modalities:
             for layer in modal.layers:
                 layer.trainable = True
         
-        
-    def fit(self, x, y, **kwargs):
-        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
-        for features, modal in zip(x, self.modalities):
-            print('##################### {} ##########################'.format(modal.name.upper()))
-            pretraining_model = self.get_model_for_pretraining(modal)
-            pretraining_model.compile(
-                optimizer=tf.keras.optimizers.Adam(learning_rate=0.002),
-                loss=loss_fn,
-                metrics=[['accuracy']] * len(self.n_classes)
-            ) 
-            
-            pretraining_model.fit(features, y, **kwargs)
-
-        # FINE-TUNE
-        print('##################### FINE-TUNING ##########################')
-        self.freeze_for_finetuning()
-        
-        self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-            loss=loss_fn,
-            metrics=['accuracy']
-        )
-
-        self.model.fit(x,y, **kwargs)
-
-        self.unfreeze_for_finetuning()
+    
 
 
 
@@ -161,3 +158,9 @@ def get_ts_layers(classes_count, adapter_size):
         Dense(classes_count),
         Softmax()
     ]
+    
+    
+def zip_dict(d):
+    for vals in zip(*(d.values())):
+        yield dict(zip(d.keys(), vals))
+        
