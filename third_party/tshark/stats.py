@@ -159,13 +159,13 @@ class IterableStats(Stats):
         self.values = values
 
     def average(self) -> float:
-        if len(self.values) != 0:
+        if len(self.values) > 0:
             return np.average(self.values)
         else:
             return None
     
     def median(self) -> float:
-        if len(self.values) != 0:
+        if len(self.values) > 0:
             return np.median(self.values)
         else:
             return None
@@ -184,39 +184,35 @@ class IterableStats(Stats):
             return np.std(self.values)
         else:
             return None
-        
-
+       
     def coeff_of_variation(self) -> float:
-        avg = self.average()
-        std = self.std_deviation()
-        if avg not in {0, None} and std is not None:
-            return std / avg
+        if len(self.values) >= 2 and self.average() != 0:
+            return self.std_deviation() / self.average()
         else:
             return None
 
     def skew_from_median(self) -> float:
         #  Skew = 3 * (Mean – Median) / Standard Deviation
-        std = self.std_deviation()
-        if std not in {0, None}:
-            return 3 * (self.average() - self.median()) / std
+        if len(self.values) >= 2 and self.std_deviation() != 0:
+            return 3 * (self.average() - self.median()) / self.std_deviation()
         else:
             return None
 
     def skew_from_mode(self) -> float:
         #  Skew =  (Mean – Mode) / Standard Deviation
-        if self.std_deviation() not in {0, None}:
+        if len(self.values) >= 2 and self.std_deviation() != 0:
             return (self.average() - self.mode()) / self.std_deviation()
         else:
             return None
     
     def min(self):
-        if len(self.values) != 0:
+        if len(self.values) > 0:
             return np.min(self.values)
         else:
             return None
     
     def max(self):
-        if len(self.values) != 0:
+        if len(self.values) > 0:
             return np.max(self.values)
         else:
             return None

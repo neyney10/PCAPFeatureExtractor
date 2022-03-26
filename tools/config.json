@@ -1,3 +1,4 @@
 {
-    "CiscoJoyPath": "/mnt/d/Program-Files/Cisco-Joy/joy/bin/joy"
+    "CiscoJoyPath": "/mnt/d/Program-Files/Cisco-Joy/joy/bin/joy",
+    "tshark_location": "/usr/bin/tshark"
 }

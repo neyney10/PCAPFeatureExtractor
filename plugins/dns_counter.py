@@ -1,6 +1,6 @@
 from nfstream import NFPlugin
 from scapy.all import IP, DNS, IPv6
-from stats.stats import IterableStats
+from ..stats.stats import IterableStats
 
 class DNSCounter(NFPlugin):
     '''
@@ -15,11 +15,11 @@ class DNSCounter(NFPlugin):
         dns_an_count
         dns_ns_count
         dns_ar_count
-        dns_response_digit_count
-        dns_response_alpha_count
-        dns_response_hypens_coun 
-        dns_response_dots_count
-        dns_response_ip_count
+        dns_response_digit_count (+ mean)
+        dns_response_alpha_count (+ mean)
+        dns_response_hypens_count (+ mean)
+        dns_response_dots_count (+ mean)
+        dns_response_ip_count (+ mean)
         dns_response_ttls_s (seconds) (+ Stats)
         
     Prefixes:
@@ -48,6 +48,11 @@ class DNSCounter(NFPlugin):
         flow.udps.bidirectional_dns_response_dots_count   = 0 # count of dots in DNS response.
         flow.udps.bidirectional_dns_response_ip_count     = 0 # number ips in response.
         flow.udps.bidirectional_dns_response_ttls_s       = [] # record Time-To-Live values in seconds.
+        flow.udps.bidirectional_mean_dns_response_digit_count  = 0 # mean relative to total number of responses
+        flow.udps.bidirectional_mean_dns_response_alpha_count  = 0 
+        flow.udps.bidirectional_mean_dns_response_hypens_count = 0 
+        flow.udps.bidirectional_mean_dns_response_dots_count   = 0 
+        flow.udps.bidirectional_mean_dns_response_ip_count     = 0 
         flow.udps.bidirectional_mean_dns_response_ttls_s             = None
         flow.udps.bidirectional_median_dns_response_ttls_s           = None
         flow.udps.bidirectional_stdev_dns_response_ttls_s            = None
@@ -70,6 +75,12 @@ class DNSCounter(NFPlugin):
         flow.udps.src2dst_dns_response_dots_count   = 0 # count of dots in DNS response.
         flow.udps.src2dst_dns_response_ip_count     = 0 # number ips in response.
         flow.udps.src2dst_dns_response_ttls_s       = [] # record Time-To-Live values in seconds.
+        flow.udps.src2dst_dns_response_ttls_s       = [] # record Time-To-Live values in seconds.
+        flow.udps.src2dst_mean_dns_response_digit_count  = 0 # mean relative to total number of responses
+        flow.udps.src2dst_mean_dns_response_alpha_count  = 0 
+        flow.udps.src2dst_mean_dns_response_hypens_count = 0 
+        flow.udps.src2dst_mean_dns_response_dots_count   = 0 
+        flow.udps.src2dst_mean_dns_response_ip_count     = 0 
         flow.udps.src2dst_mean_dns_response_ttls_s             = None
         flow.udps.src2dst_median_dns_response_ttls_s           = None
         flow.udps.src2dst_stdev_dns_response_ttls_s            = None
@@ -92,6 +103,11 @@ class DNSCounter(NFPlugin):
         flow.udps.dst2src_dns_response_dots_count   = 0 # count of dots in DNS response.
         flow.udps.dst2src_dns_response_ip_count     = 0 # number ips in response.
         flow.udps.dst2src_dns_response_ttls_s       = [] # record Time-To-Live values in seconds.
+        flow.udps.dst2src_mean_dns_response_digit_count  = 0 # mean relative to total number of responses
+        flow.udps.dst2src_mean_dns_response_alpha_count  = 0 
+        flow.udps.dst2src_mean_dns_response_hypens_count = 0 
+        flow.udps.dst2src_mean_dns_response_dots_count   = 0 
+        flow.udps.dst2src_mean_dns_response_ip_count     = 0 
         flow.udps.dst2src_mean_dns_response_ttls_s             = None
         flow.udps.dst2src_median_dns_response_ttls_s           = None
         flow.udps.dst2src_stdev_dns_response_ttls_s            = None
@@ -160,6 +176,7 @@ class DNSCounter(NFPlugin):
                 flow.udps.bidirectional_dns_response_ttls_s       = flow.udps.src2dst_dns_response_ttls_s       + flow.udps.dst2src_dns_response_ttls_s
     
     def on_expire(self, flow):
+        # TTLS
         # src -> dst
         if len(flow.udps.src2dst_dns_response_ttls_s) > 0:
             src2dst_stats = IterableStats(flow.udps.src2dst_dns_response_ttls_s)
@@ -168,7 +185,7 @@ class DNSCounter(NFPlugin):
             flow.udps.src2dst_stdev_dns_response_ttls_s        = src2dst_stats.std_deviation()
             flow.udps.src2dst_variance_dns_response_ttls_s     = src2dst_stats.variance()
             flow.udps.src2dst_coeff_of_var_dns_response_ttls_s = src2dst_stats.coeff_of_variation()
-            flow.udps.src2dst_skew_from_median_dns_response_ttls_s         = src2dst_stats.skew_from_median()
+            flow.udps.src2dst_skew_from_median_dns_response_ttls_s = src2dst_stats.skew_from_median()
             flow.udps.src2dst_min_dns_response_ttls_s          = src2dst_stats.min()
             flow.udps.src2dst_max_dns_response_ttls_s          = src2dst_stats.max()
         else: 
@@ -199,6 +216,29 @@ class DNSCounter(NFPlugin):
             flow.udps.bidirectional_max_dns_response_ttls_s              = bi_stats.max()
         else: 
             flow.udps.bidirectional_dns_response_ttls_s = None
+            
+        # Char/Digits/Dots/Hypens
+        # src -> dst
+        if flow.udps.src2dst_dns_responses > 0:
+            flow.udps.src2dst_mean_dns_response_digit_count  = flow.udps.src2dst_dns_response_digit_count  / flow.udps.src2dst_dns_responses
+            flow.udps.src2dst_mean_dns_response_alpha_count  = flow.udps.src2dst_dns_response_alpha_count  / flow.udps.src2dst_dns_responses
+            flow.udps.src2dst_mean_dns_response_dots_count   = flow.udps.src2dst_dns_response_dots_count   / flow.udps.src2dst_dns_responses
+            flow.udps.src2dst_mean_dns_response_ip_count     = flow.udps.src2dst_dns_response_ip_count     / flow.udps.src2dst_dns_responses
+            flow.udps.src2dst_mean_dns_response_hypens_count = flow.udps.src2dst_dns_response_hypens_count / flow.udps.src2dst_dns_responses
+        # dst -> src
+        if flow.udps.dst2src_dns_responses > 0:
+            flow.udps.dst2src_mean_dns_response_digit_count  = flow.udps.dst2src_dns_response_digit_count  / flow.udps.dst2src_dns_responses
+            flow.udps.dst2src_mean_dns_response_alpha_count  = flow.udps.dst2src_dns_response_alpha_count  / flow.udps.dst2src_dns_responses
+            flow.udps.dst2src_mean_dns_response_dots_count   = flow.udps.dst2src_dns_response_dots_count   / flow.udps.dst2src_dns_responses
+            flow.udps.dst2src_mean_dns_response_ip_count     = flow.udps.dst2src_dns_response_ip_count     / flow.udps.dst2src_dns_responses
+            flow.udps.dst2src_mean_dns_response_hypens_count = flow.udps.dst2src_dns_response_hypens_count / flow.udps.dst2src_dns_responses
+        # bidir
+        if flow.udps.bidirectional_dns_responses > 0:
+            flow.udps.bidirectional_mean_dns_response_digit_count  = flow.udps.bidirectional_dns_response_digit_count  / flow.udps.bidirectional_dns_responses
+            flow.udps.bidirectional_mean_dns_response_alpha_count  = flow.udps.bidirectional_dns_response_alpha_count  / flow.udps.bidirectional_dns_responses
+            flow.udps.bidirectional_mean_dns_response_dots_count   = flow.udps.bidirectional_dns_response_dots_count   / flow.udps.bidirectional_dns_responses
+            flow.udps.bidirectional_mean_dns_response_ip_count     = flow.udps.bidirectional_dns_response_ip_count     / flow.udps.bidirectional_dns_responses
+            flow.udps.bidirectional_mean_dns_response_hypens_count = flow.udps.bidirectional_dns_response_hypens_count / flow.udps.bidirectional_dns_responses
     
     def _count_rrname_char_of(self, dns_res_packet, count_func):
         resource_record_names = []

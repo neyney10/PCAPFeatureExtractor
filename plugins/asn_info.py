@@ -2,7 +2,7 @@ from nfstream import NFPlugin
 import pyasn
 import functools
 import pandas as pd
-
+from os import path
 
 class ASNInfo(NFPlugin):
     '''
@@ -23,7 +23,8 @@ class ASNInfo(NFPlugin):
         src_
         dst_
     '''
-    def __init__(self, pyasn_context_file='./tools/pyasn.db', as_contextual_file='./tools/ip2asn-v4.tsv', **kwargs):
+    def __init__(self, pyasn_context_file=path.join(path.dirname(__file__), '../tools/pyasn.db'), 
+                as_contextual_file=path.join(path.dirname(__file__),'../tools/ip2asn-v4.tsv'), **kwargs):
         super().__init__(**kwargs)
         self.pyasn_contextual_data = pyasn.pyasn(pyasn_context_file)
         self.as_contextual_data = pd.read_csv(as_contextual_file, 
@@ -60,8 +61,11 @@ class ASNInfo(NFPlugin):
     MAX_CACHED_RESULTS = 2**16
     @functools.lru_cache(maxsize=MAX_CACHED_RESULTS)
     def get_asn_info(self, ip_addr: str):
-        asn_n,_ = self.pyasn_contextual_data.lookup(ip_addr)
-        if asn_n != None:
-            return self.as_contextual_data[self.as_contextual_data['AS_number'] == asn_n].iloc[0]
+        try:
+            asn_n,_ = self.pyasn_contextual_data.lookup(ip_addr)
+            if asn_n != None:
+                return self.as_contextual_data[self.as_contextual_data['AS_number'] == asn_n].iloc[0]
+        except:
+            pass
 
         return None
