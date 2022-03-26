@@ -1,19 +1,20 @@
-
-
 import unittest
-import sys
-sys.path.append('../')
+import os
 from nfstream import NFStreamer
-from plugins.n_pkts_byte_freq import NPacketsByteFrequency
-from plugins.dns_counter import DNSCounter
-from plugins.most_freq_payload_len_ratio import MostFreqPayloadLenRatio
-from plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
-from plugins.res_req_diff_time import ResReqDiffTime
-from plugins.pkt_rel_time import PacketRelativeTime
-from plugins.clump_flows import Clump_Flow
-from plugins.packets_size_interarrival_time import Packets_size_and_interarrival_time
-from plugins.n_bytes import NBytes
 import numpy as np
+from EIMTC.plugins.n_pkts_byte_freq import NPacketsByteFrequency
+from EIMTC.plugins.dns_counter import DNSCounter
+from EIMTC.plugins.most_freq_payload_len_ratio import MostFreqPayloadLenRatio
+from EIMTC.plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
+from EIMTC.plugins.res_req_diff_time import ResReqDiffTime
+from EIMTC.plugins.pkt_rel_time import PacketRelativeTime
+from EIMTC.plugins.clump_flows import Clump_Flow
+from EIMTC.plugins.packets_size_interarrival_time import Packets_size_and_interarrival_time
+from EIMTC.plugins.n_bytes import NBytes
+
+
+dirname = os.path.dirname(__file__)
+pcaps_dir = os.path.join(dirname, 'pcaps')
 
 '''
     Testing NFStream Plugins
@@ -26,7 +27,7 @@ class TestNBytes(unittest.TestCase):
     def test_100_bytes_udp_dns_single_packet(self):
         # Given
         plugins = [NBytes(n=100)]
-        pcap_filepath = './pcaps/dns_2_single_response_packet.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'dns_2_single_response_packet.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -49,7 +50,7 @@ class TestNBytes(unittest.TestCase):
     def test_200_bytes_udp_dns_single_packet(self):
         # Given
         plugins = [NBytes(n=200)]
-        pcap_filepath = './pcaps/dns_2_single_response_packet.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'dns_2_single_response_packet.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -79,7 +80,7 @@ class TestNBytes(unittest.TestCase):
     def test_184_bytes_udp_dhcpv6(self):
         # Given
         plugins = [NBytes(n=184)]
-        pcap_filepath = './pcaps/dhcpv6_request_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'dhcpv6_request_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -113,7 +114,7 @@ class TestNBytes(unittest.TestCase):
         '''
         # Given
         plugins = [NBytes(n=100)]
-        pcap_filepath = './pcaps/udp_skype_eth_padding_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'udp_skype_eth_padding_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -142,7 +143,7 @@ class TestNBytes(unittest.TestCase):
         '''
         # Given
         plugins = [NBytes(n=120)]
-        pcap_filepath = './pcaps/udp_skype_eth_padding_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'udp_skype_eth_padding_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -167,7 +168,7 @@ class TestNBytes(unittest.TestCase):
     def test_200_bytes_udp_snmp_ipv6(self):
         # Given
         plugins = [NBytes(n=200)]
-        pcap_filepath = './pcaps/snmp_ipv6_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'snmp_ipv6_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -192,11 +193,185 @@ class TestNBytes(unittest.TestCase):
                 3, 48, 17, 2, 4, 41, 205, 177,
             ],
         )
+
+    def test_200_bytes_udp_snmp_ipv4(self):
+        # Given
+        plugins = [NBytes(n=200)]
+        pcap_filepath = os.path.join(pcaps_dir, 'snmp_ipv4_single.pcap')
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 200)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 200 payload bytes
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 46, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5, 1, 5, 0, 48, 15, 6,
+                11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 1, 1, 5, 0, 48, 15,
+                6, 11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 5, 0,
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 47, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5, 1, 5, 0, 48, 15, 6,
+                11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 1, 1, 5, 0, 48, 15,
+                6, 11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 5, 0,
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 48, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5,
+            ],
+        )
+
+    def test_784_bytes_udp_snmp_ipv4(self):
+        '''
+        This is a test for a bug. 
+        Scapy dissector didnt dissect correctly SNMP 
+        packet bytes.
+        '''
+        # Given
+        plugins = [NBytes(n=784)]
+        pcap_filepath = os.path.join(pcaps_dir, 'snmp_ipv4_single.pcap')
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 784)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 784 payload bytes
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 46, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5, 1, 5, 0, 48, 15, 6,
+                11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 1, 1, 5, 0, 48, 15,
+                6, 11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 5, 0,
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 47, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5, 1, 5, 0, 48, 15, 6,
+                11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 1, 1, 5, 0, 48, 15,
+                6, 11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 5, 0,
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 48, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5, 1, 5, 0, 48, 15, 6,
+                11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 1, 1, 5, 0, 48, 15,
+                6, 11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 5, 0,
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 49, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5, 1, 5, 0, 48, 15, 6,
+                11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 1, 1, 5, 0, 48, 15,
+                6, 11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 5, 0,
+                48, 130, 0, 90, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 162,
+                130, 0, 75, 2, 3, 2, 185, 46, 2, 1, 0, 2, 1, 0, 48, 130,
+                0, 60, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2, 1, 25, 3, 2,
+                1, 5, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2,
+                1, 25, 3, 5, 1, 1, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 4, 1, 161,
+                48, 130, 0, 90, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 162,
+                130, 0, 75, 2, 3, 2, 185, 47, 2, 1, 0, 2, 1, 0, 48, 130,
+                0, 60, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2, 1, 25, 3, 2,
+                1, 5, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2,
+                1, 25, 3, 5, 1, 1, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 4, 1, 161,
+                48, 130, 0, 90, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 162,
+                130, 0, 75, 2, 3, 2, 185, 48, 2, 1, 0, 2, 1, 0, 48, 130,
+                0, 60, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2, 1, 25, 3, 2,
+                1, 5, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2,
+                1, 25, 3, 5, 1, 1, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 4, 1, 161,
+                48, 130, 0, 90, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 162,
+                130, 0, 75, 2, 3, 2, 185, 49, 2, 1, 0, 2, 1, 0, 48, 130,
+                0, 60, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2, 1, 25, 3, 2,
+                1, 5, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11, 43, 6, 1, 2,
+                1, 25, 3, 5, 1, 1, 1, 2, 1, 3, 48, 130, 0, 16, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 4, 1, 161,
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 64, 2,
+                3, 2, 185, 50, 2, 1, 0, 2, 1, 0, 48, 51, 48, 15, 6, 11,
+                43, 6, 1, 2, 1, 25, 3, 2, 1, 5, 1, 5, 0, 48, 15, 6,
+                11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 1, 1, 5, 0, 48, 15,
+                6, 11, 43, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1, 5, 0,
+                48, 77, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99,
+            ],
+        )
         
+    def test_784_bytes_udp_snmp_ipv4_2(self):
+        '''
+        This is a test for a bug. 
+        Scapy dissector didnt dissect correctly SNMP 
+        packet bytes.
+        '''
+        # Given
+        plugins = [NBytes(n=784)]
+        pcap_filepath = os.path.join(pcaps_dir, 'snmp_ipv4_single_2.pcap')
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertEqual(flow_at_test.udps.n_bytes_counted, 784)
+        self.assertSequenceEqual(list(flow_at_test.udps.n_bytes), 
+            [ # 784 payload bytes
+                48, 130, 0, 176, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 162,
+                130, 0, 161, 2, 3, 2, 190, 139, 2, 1, 0, 2, 1, 0, 48, 130,
+                0, 146, 48, 130, 0, 22, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2,
+                1, 13, 1, 1, 4, 6, 84, 114, 97, 121, 32, 49, 48, 130, 0, 22,
+                6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 2, 4, 6,
+                84, 114, 97, 121, 32, 50, 48, 130, 0, 28, 6, 12, 43, 6, 1, 2,
+                1, 43, 8, 2, 1, 13, 1, 3, 4, 12, 77, 97, 110, 117, 97, 108,
+                32, 80, 97, 112, 101, 114, 48, 130, 0, 31, 6, 12, 43, 6, 1, 2,
+                1, 43, 8, 2, 1, 13, 1, 4, 4, 15, 77, 97, 110, 117, 97, 108,
+                32, 69, 110, 118, 101, 108, 111, 112, 101, 48, 130, 0, 23, 6, 12, 43,
+                6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 5, 4, 7, 77, 80, 32,
+                84, 114, 97, 121,
+                48, 116, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 103, 2,
+                3, 2, 190, 145, 2, 1, 0, 2, 1, 0, 48, 90, 48, 16, 6, 12,
+                43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 6, 5, 0, 48, 16,
+                6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 7, 5, 0,
+                48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 8,
+                5, 0, 48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13,
+                1, 9, 5, 0, 48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2,
+                1, 13, 1, 10, 5, 0,
+                48, 130, 0, 176, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 162,
+                130, 0, 161, 2, 3, 2, 190, 141, 2, 1, 0, 2, 1, 0, 48, 130,
+                0, 146, 48, 130, 0, 22, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2,
+                1, 13, 1, 1, 4, 6, 84, 114, 97, 121, 32, 49, 48, 130, 0, 22,
+                6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 2, 4, 6,
+                84, 114, 97, 121, 32, 50, 48, 130, 0, 28, 6, 12, 43, 6, 1, 2,
+                1, 43, 8, 2, 1, 13, 1, 3, 4, 12, 77, 97, 110, 117, 97, 108,
+                32, 80, 97, 112, 101, 114, 48, 130, 0, 31, 6, 12, 43, 6, 1, 2,
+                1, 43, 8, 2, 1, 13, 1, 4, 4, 15, 77, 97, 110, 117, 97, 108,
+                32, 69, 110, 118, 101, 108, 111, 112, 101, 48, 130, 0, 23, 6, 12, 43,
+                6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 5, 4, 7, 77, 80, 32,
+                84, 114, 97, 121,
+                48, 116, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 103, 2,
+                3, 2, 190, 147, 2, 1, 0, 2, 1, 0, 48, 90, 48, 16, 6, 12,
+                43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 6, 5, 0, 48, 16,
+                6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 7, 5, 0,
+                48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 8,
+                5, 0, 48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13,
+                1, 9, 5, 0, 48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2,
+                1, 13, 1, 10, 5, 0,
+                48, 116, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 162, 103, 2,
+                3, 2, 190, 143, 2, 1, 2, 2, 1, 1, 48, 90, 48, 16, 6, 12,
+                43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 6, 5, 0, 48, 16,
+                6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 7, 5, 0,
+                48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13, 1, 8,
+                5, 0, 48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 13,
+                1, 9, 5, 0, 48, 16, 6, 12, 43, 6, 1, 2, 1, 43, 8, 2,
+                1, 13, 1, 10, 5, 0,
+                48, 80, 2, 1, 0, 4, 6, 112, 117, 98, 108, 105, 99, 160, 67, 2,
+                3, 2, 190, 149, 2, 1, 0, 2, 1, 0, 48, 54, 48, 16, 6, 12,
+                43, 6, 1, 2, 1, 43, 8, 2, 1, 3, 1, 0, 5, 0, 48, 16,
+                6, 12, 43, 6, 1, 2, 1, 43, 8, 2, 1, 4, 1, 0, 5, 0,
+                48, 16, 6, 12, 43, 6,
+            ],
+        )
+
     def test_100_bytes_tcp_tls_single_packet(self):
         # Given
         plugins = [NBytes(n=100)]
-        pcap_filepath = './pcaps/tls_client_hello_single_packet.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_client_hello_single_packet.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -219,7 +394,7 @@ class TestNBytes(unittest.TestCase):
     def test_16_bytes_tcp_ack_empty_single_packet(self):
         # Given
         plugins = [NBytes(n=16)]
-        pcap_filepath = './pcaps/tcp_ack_single_packet.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tcp_ack_single_packet.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -237,7 +412,7 @@ class TestNBytes(unittest.TestCase):
     def test_16_bytes_tcp_syn_empty_single_packet(self):
         # Given
         plugins = [NBytes(n=16)]
-        pcap_filepath = './pcaps/tcp_syn_single_packet.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tcp_syn_single_packet.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -255,7 +430,7 @@ class TestNBytes(unittest.TestCase):
     def test_300_bytes_tcp_http(self):
         # Given
         plugins = [NBytes(n=300)]
-        pcap_filepath = './pcaps/http_most_freq_payload_ratio_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'http_most_freq_payload_ratio_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamers
@@ -295,7 +470,7 @@ class TestClumpsPlugin(unittest.TestCase):
 
     def test_clump_flow_1(self):
             # Given
-        pcap_filepath = './pcaps/tls_pkt_rel_time_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=self.plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -452,7 +627,7 @@ class TestClumpsPlugin(unittest.TestCase):
 
     def test_clump_flow_2(self):
         # Given
-        pcap_filepath = './pcaps/tls_small_pkt_payload_ratio_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_small_pkt_payload_ratio_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=self.plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -617,7 +792,7 @@ class TestPacketsSizeInterarrivalTimePlugin(unittest.TestCase):
     
     def test_packets_size_and_interarrival_time_1(self):
         # Given
-        pcap_filepath = './pcaps/tls_pkt_rel_time_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=self.plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -655,7 +830,7 @@ class TestPacketsSizeInterarrivalTimePlugin(unittest.TestCase):
 
     def test_packets_size_and_interarrival_time_2(self):
         # Given
-        pcap_filepath = './pcaps/tls_small_pkt_payload_ratio_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_small_pkt_payload_ratio_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=self.plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -713,7 +888,7 @@ class TestDNSCounter(unittest.TestCase):
         # TODO: read a file with a single flow, as multiprocessing by n_meters can reorder the flows
         # Given
         plugins = [DNSCounter()]
-        pcap_filepath = './pcaps/dns_1.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'dns_1.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins, n_meters=1)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -794,7 +969,7 @@ class TestMostFreqPayloadRatio(unittest.TestCase):
     def test_most_freq_payload_ratio_1(self):
         # Given
         plugins = [MostFreqPayloadLenRatio()]
-        pcap_filepath = './pcaps/http_most_freq_payload_ratio_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'http_most_freq_payload_ratio_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -817,7 +992,7 @@ class TestSmallPacketPayloadRatio(unittest.TestCase):
     def test_small_pkt_payload_ratio_1(self):
         # Given
         plugins = [SmallPacketPayloadRatio()]
-        pcap_filepath = './pcaps/tls_small_pkt_payload_ratio_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_small_pkt_payload_ratio_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -840,7 +1015,7 @@ class TestPacketRelativeTime(unittest.TestCase):
     def test_pkt_rel_time_1(self):
         # Given
         plugins = [PacketRelativeTime()]
-        pcap_filepath = './pcaps/tls_pkt_rel_time_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -885,7 +1060,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
     def test_byte_frequency_1(self):
         # Given
         plugins = [NPacketsByteFrequency(n_first_packets=1)]
-        pcap_filepath = './pcaps/tls_pkt_rel_time_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -961,7 +1136,7 @@ class TestByteFrequencyPlugin(unittest.TestCase):
     def test_byte_frequency_2(self):
         # Given
         plugins = [NPacketsByteFrequency(n_first_packets=2)]
-        pcap_filepath = './pcaps/tls_pkt_rel_time_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -1043,7 +1218,7 @@ class TestReqResDiffTimePlugin(unittest.TestCase):
 
     def test_stream_req_res_diff_time_1(self):
         # Given
-        pcap_filepath = './pcaps/tls_req_res_diff_time_single.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_req_res_diff_time_single.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=self.plugins)
         # When
         flows = list(streamer) # read streams/flows streamer
@@ -1074,7 +1249,7 @@ class TestReqResDiffTimePlugin(unittest.TestCase):
             
     def test_stream_req_res_diff_time_2(self):
         # Given / Arrange
-        pcap_filepath = './pcaps/tls_req_res_diff_time_single_2.pcap'
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_req_res_diff_time_single_2.pcap')
         streamer = NFStreamer(source=pcap_filepath, udps=self.plugins)
         # When / Act
         flows = list(streamer) # read streams/flows streamer

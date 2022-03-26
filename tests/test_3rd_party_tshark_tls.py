@@ -1,11 +1,13 @@
 import unittest
-import sys
 from os import path
 import pandas as pd
 import numpy as np
 from numpy.testing import assert_array_equal
-sys.path.append('../')
-from tls_tshark_entry import _extract_tls_features, _read_config_file
+from EIMTC.tls_tshark_entry import _extract_tls_features, _read_config_file
+
+dirname = path.dirname(__file__)
+pcaps_dir = path.join(dirname, 'pcaps')
+
 
 class Test3rdPartyTSharkForTLS(unittest.TestCase):
     @classmethod
@@ -16,7 +18,7 @@ class Test3rdPartyTSharkForTLS(unittest.TestCase):
         
     def test_tls_client_hello_single_packet(self):
         # Given
-        pcap_filepath = './pcaps/tls_client_hello_single_packet.pcap'
+        pcap_filepath = path.join(pcaps_dir, 'tls_client_hello_single_packet.pcap')
         # When
         df: pd.DataFrame = _extract_tls_features(pcap_filepath, self.config['tshark_location'])
         # Then
@@ -113,10 +115,10 @@ class Test3rdPartyTSharkForTLS(unittest.TestCase):
         assert_array_equal(df['dst2src_coeff_of_var_tls_clump_sizes'], [np.nan])
         assert_array_equal(df['dst2src_min_tls_clump_sizes'], [np.nan])
         assert_array_equal(df['dst2src_max_tls_clump_sizes'], [np.nan])
- 
+
     def test_tls_record_per_packet_single_session(self):
         # Given
-        pcap_filepath = './pcaps/tls_pkt_rel_time_single.pcap'
+        pcap_filepath = path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
         # When
         df: pd.DataFrame = _extract_tls_features(pcap_filepath, self.config['tshark_location'])
         # Then
@@ -130,7 +132,7 @@ class Test3rdPartyTSharkForTLS(unittest.TestCase):
     
     def test_tls_multirecord_in_packet_single_session(self):
         # Given
-        pcap_filepath = './pcaps/tls_small_pkt_payload_ratio_single.pcap'
+        pcap_filepath = path.join(pcaps_dir, 'tls_small_pkt_payload_ratio_single.pcap')
         # When
         df: pd.DataFrame = _extract_tls_features(pcap_filepath, self.config['tshark_location'])
         # Then
