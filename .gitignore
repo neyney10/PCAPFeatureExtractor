@@ -211,3 +211,4 @@ __pycache__
 *.csv
 pcaps/
 !tests/pcaps/
+temp/*
