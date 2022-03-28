@@ -29,7 +29,7 @@ class CustomDistiller(Model):
         for n_class in n_classes:
             outputs.append(stack([shared_representation] + get_ts_layers(classes_count=n_class, adapter_size=adapter_size)))
         self.model = Model(
-            name='Distiller',
+            name='CustomDistiller',
             inputs=[modal.input for modal in modalities],
             outputs= outputs
         )
@@ -82,7 +82,7 @@ class CustomDistiller(Model):
         for n_class in self.n_classes:
             outputs.append(stack([model_w_adapter, Dense(n_class, activation='softmax')]))
         return Model(
-            name='pretraining_model',
+            name='_'.join(['pretraining_model', model.name.replace(' ','_')]),
             inputs=model.input,
             outputs=outputs
         )

@@ -24,7 +24,7 @@ class MalDist(CustomDistiller):
 def wang_payload_modality(payload_size=784):
     input_layer_payload_modality = Input(shape=(payload_size,1), name='input_payload')
     return Model(
-        name='Wang payload modality (nbytes)',
+        name='Wang payload modality - nbytes',
         inputs=input_layer_payload_modality,
         outputs=stack([
             input_layer_payload_modality,
