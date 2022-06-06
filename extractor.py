@@ -4,6 +4,7 @@
 
 from nfstream import NFStreamer  # https://www.nfstream.org/docs/api
 from os import path
+from .utils import is_iterable
 from .tls_tshark_entry import extract_tls_features_and_merge
 #from .hosts_processor import HostsProcessor
 from .plugins.clump_flows import Clump_Flow
@@ -24,66 +25,67 @@ from .plugins.stnn import STNN
 
 
 class Extractor:
-    def __init__(self, input_pcap_filepath, output_dirpath, bpf_filter_string=None, custom_plugin_package=None, TLS=True) -> None:
-        self.input_pcap_filepath = input_pcap_filepath
+    def __init__(self, output_dirpath, bpf_filter_string=None, custom_plugin_package=None, TLS=True) -> None:
         self.output_dirpath = output_dirpath
         self.bpf_filter_string = bpf_filter_string
         self.custom_plugin_package = custom_plugin_package
         self.TLS = TLS
-        
-    def extract(self):
-        plugins = self._plugins() if self.custom_plugin_package is None else self.custom_plugin_package
 
-        # Time-windowed flows
-        '''
-        my_streamer = NFStreamer(source=self.input_pcap_filepath,
-                                decode_tunnels=True,
-                                bpf_filter=self.bpf_filter_string,
-                                promiscuous_mode=True,
-                                snapshot_length=1536,
-                                idle_timeout=1,
-                                active_timeout=1,
-                                accounting_mode=3,
-                                udps=plugins,
-                                n_dissections=20,
-                                statistical_analysis=True,
-                                splt_analysis=0,
-                                n_meters=0,
-                                performance_report=0)
-        
-        my_streamer.to_csv(path.join(self.output_dirpath,'out-timed-flows.csv'), columns_to_anonymize=[])
-        del my_streamer
-        '''
-        
-        # Sessions
-        session_streamer = NFStreamer(source=self.input_pcap_filepath,
-                                decode_tunnels=True,
-                                bpf_filter=self.bpf_filter_string,
-                                promiscuous_mode=True,
-                                snapshot_length=1536,
-                                idle_timeout=999999999,
-                                active_timeout=999999999,
-                                accounting_mode=0,
-                                udps=plugins,
-                                n_dissections=20,
-                                statistical_analysis=True,
-                                splt_analysis=0,
-                                n_meters=0,
-                                performance_report=0)
 
-        if self.TLS:
-            sessions_df = session_streamer.to_pandas(columns_to_anonymize=[])
-            config_filepath = path.join(path.dirname(__file__), 'tools/config.json')
-            sessions_df = extract_tls_features_and_merge(sessions_df, self.input_pcap_filepath, config_filepath)
-            sessions_df.to_csv(path.join(self.output_dirpath,'out-sessions.csv'), index=False)
+    def extract(self, input_pcap_filepath, append=False):
+        if is_iterable(input_pcap_filepath):
+            self.extract_many(input_pcap_filepath, append)
         else:
-            session_streamer.to_csv(path.join(self.output_dirpath,'out-sessions.csv'))
+            self.extract_single(input_pcap_filepath, append)
 
-        # Hosts
-        # HostsProcessor(sessions_df, self.output_dirpath).process()
-        #print(6,h.heap())
         return path.join(self.output_dirpath,'out-sessions.csv')
+    
+    
+    def extract_single(self, input_pcap_filepath, append=False):
+        plugins = self._plugins() if self.custom_plugin_package is None else self.custom_plugin_package
+        session_streamer = NFStreamer(
+            source=input_pcap_filepath,
+            decode_tunnels=True,
+            bpf_filter=self.bpf_filter_string,
+            promiscuous_mode=True,
+            snapshot_length=1536,
+            idle_timeout=999999999,
+            active_timeout=999999999,
+            accounting_mode=0,
+            udps=plugins,
+            n_dissections=20,
+            statistical_analysis=True,
+            splt_analysis=0,
+            n_meters=0,
+            performance_report=0
+        )
 
+        sessions_df = session_streamer.to_pandas(columns_to_anonymize=[])
+        if self.TLS:
+            config_filepath = path.join(path.dirname(__file__), 'tools/config.json')
+            sessions_df = extract_tls_features_and_merge(sessions_df, input_pcap_filepath, config_filepath)
+            
+        sessions_df['filepath'] = input_pcap_filepath
+        sessions_df.to_csv(
+            path.join(self.output_dirpath, 'out-sessions.csv'), 
+            index=False, 
+            mode='a' if append else 'w', 
+            header=not append
+        )
+
+
+    def extract_many(self, input_pcap_filepaths, append=False):
+        for i, filepath in enumerate(self.extract_iter(input_pcap_filepaths, append)):
+            print(f'[{i+1}/{len(input_pcap_filepaths)}] Finished extraction from {filepath}')
+
+
+    def extract_iter(self, input_pcap_filepaths, append=False):
+        for filepath in input_pcap_filepaths:
+            self.extract_single(filepath, append)
+            yield filepath
+            append = True
+            
+            
     def _plugins(self):
         return [
             ASNInfo(),
