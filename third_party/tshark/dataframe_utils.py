@@ -11,7 +11,9 @@ def merge_df_by_biflows(df_tshark, df_nfstream):
     
     df_nfstream = add_five_tuple_biflow_id_column_nfstream(df_nfstream)
     df_tshark = df_tshark.reset_index()
-    return df_nfstream.merge(df_tshark, left_on='five_tuple_biflow_id', right_on='five_tuple_biflow_id', how='left')
+    df_merged = df_nfstream.merge(df_tshark, left_on='five_tuple_biflow_id', right_on='five_tuple_biflow_id', how='left')
+    df_merged.drop(columns='five_tuple_biflow_id', inplace=True)
+    return df_merged
 
 
 def read_tshark_csv_output(filepath):
