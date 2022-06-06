@@ -5,6 +5,7 @@ import numpy as np
 from EIMTC.plugins.n_pkts_byte_freq import NPacketsByteFrequency
 from EIMTC.plugins.dns_counter import DNSCounter
 from EIMTC.plugins.most_freq_payload_len_ratio import MostFreqPayloadLenRatio
+from EIMTC.plugins.simple_tig import SimpleTIG
 from EIMTC.plugins.small_pkt_payload_ratio import SmallPacketPayloadRatio
 from EIMTC.plugins.res_req_diff_time import ResReqDiffTime
 from EIMTC.plugins.pkt_rel_time import PacketRelativeTime
@@ -19,6 +20,111 @@ pcaps_dir = os.path.join(dirname, 'pcaps')
 '''
     Testing NFStream Plugins
                             '''
+
+
+
+class TestSimpleTIG(unittest.TestCase):
+
+    def test_simpletig_2_pkts_with_size_raw(self):
+        # Given
+        plugins = [SimpleTIG(n_packets=2, size_type='raw')]
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertSequenceEqual(flow_at_test.udps.simple_tig_adj, 
+            [ # Adjacancy matrix
+                [0,1],
+                [1,0]
+            ]
+        )
+        self.assertSequenceEqual(flow_at_test.udps.simple_tig_features, 
+            [ # Features matrix
+                [-98],
+                [229],
+            ]
+        )
+        
+    def test_simpletig_10_pkts_with_size_raw(self):
+        # Given
+        plugins = [SimpleTIG(n_packets=10, size_type='raw')]
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_pkt_rel_time_single.pcap')
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertSequenceEqual(flow_at_test.udps.simple_tig_adj, 
+            [ # Adjacancy matrix
+                [0,1,0,0,0,0,0,0,0,0],
+                [1,0,1,0,0,0,0,0,0,0],
+                [0,1,0,1,0,0,0,0,0,0],
+                [0,0,1,0,1,0,0,0,0,0],
+                [0,0,0,1,0,1,0,0,0,0],
+                [0,0,0,0,1,0,1,0,0,0],
+                [0,0,0,0,0,1,0,1,0,0],
+                [0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0], # Extra padding
+                [0,0,0,0,0,0,0,0,0,0], # Extra padding
+            ]
+        )
+        self.assertSequenceEqual(flow_at_test.udps.simple_tig_features, 
+            [ # Features matrix
+                [-98],
+                [229],
+                [-98],
+                [229],
+                [-98],
+                [229],
+                [-98],
+                [229],
+                [0], # Extra padding
+                [0], # Extra padding
+            ]
+        )
+        
+    def test_simpletig_10_pkts_with_size_ip(self):
+        # Given
+        plugins = [SimpleTIG(n_packets=10, size_type='ip')]
+        pcap_filepath = os.path.join(pcaps_dir, 'tls_req_res_diff_time_single_2.pcap')
+        streamer = NFStreamer(source=pcap_filepath, udps=plugins)
+        # When
+        flows = list(streamer) # read streams/flows streamers
+        # Then
+        flow_at_test = flows[0]
+        self.assertLessEqual(len(flows), 1, 'The PCAP test file should contain only a single stream, but contains more.')
+        self.assertSequenceEqual(flow_at_test.udps.simple_tig_adj, 
+            [ # Adjacancy matrix
+                [0,1,1,0,0,0,0,0,0,0],
+                [1,0,0,0,1,0,0,0,0,0],
+                [1,0,0,1,0,1,0,0,0,0],
+                [0,0,1,0,1,0,0,0,0,0],
+                [0,1,0,1,0,0,1,0,0,0],
+                [0,0,1,0,0,0,1,1,0,0],
+                [0,0,0,0,1,1,0,0,0,1],
+                [0,0,0,0,0,1,0,0,1,0],
+                [0,0,0,0,0,0,0,1,0,1], 
+                [0,0,0,0,0,0,1,0,1,0], 
+            ]
+        )
+        self.assertSequenceEqual(flow_at_test.udps.simple_tig_features, 
+            [ # Features matrix
+                [-93],
+                [-138],
+                [75],
+                [79],
+                [146],
+                [-89],
+                [-138],
+                [75],
+                [76],
+                [146],
+            ]
+        )
 
 
 

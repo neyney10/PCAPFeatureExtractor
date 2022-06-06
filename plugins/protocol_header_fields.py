@@ -31,3 +31,14 @@ class ProtocolHeaderFields(NFPlugin):
             
         flow.udps.protocol_header_fields = matrix
 
+
+    @staticmethod
+    def preprocess(dataframe):
+        import ast
+        # validate
+        assert 'udps.protocol_header_fields' in dataframe.columns, "Column 'udps.protocol_header_fields' not found."
+        assert isinstance(dataframe['udps.protocol_header_fields'].iloc[0], str), "Values in column 'udps.protocol_header_fields' are already processed."
+        
+        dataframe['udps.protocol_header_fields'] = dataframe['udps.protocol_header_fields'].apply(ast.literal_eval)
+        
+        

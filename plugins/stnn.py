@@ -115,3 +115,17 @@ class STNN(NFPlugin):
         del flow.udps.data_packets_size_stats
 
         flow.udps.stnn_image = [list(i) for i in matrix.astype(np.float32)]
+        
+        
+    @staticmethod
+    def preprocess(dataframe):
+        ''' 
+        Preprocessing method for the STNN features.
+        Converting 'udps.stnn_image' column from str to 2D-list.
+        '''
+        import ast
+        # validate
+        assert 'udps.stnn_image' in dataframe.columns, "Column 'udps.stnn_image' not found."
+        assert isinstance(dataframe['udps.stnn_image'].iloc[0], str), "Values in column 'udps.stnn_image' are already processed."
+        
+        dataframe['udps.stnn_image'] = dataframe['udps.stnn_image'].apply(ast.literal_eval)

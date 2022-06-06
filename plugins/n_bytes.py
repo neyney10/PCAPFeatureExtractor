@@ -3,6 +3,10 @@ import numpy as np
 from scapy.all import IP, IPv6, raw
 from pypacker.layer3 import ip
 from pypacker.layer3 import ip6
+import pandas as pd
+import ast
+
+
 
 class NBytes(NFPlugin):
     '''
@@ -79,4 +83,17 @@ class NBytes(NFPlugin):
             pypacker_packet = ip6.IP6(packet.ip_packet)
 
         return pypacker_packet.upper_layer.body_bytes
+
+    @staticmethod
+    def preprocess(dataframe: pd.DataFrame):
+        ''' 
+        Preprocessing method for the n_bytes features.
+        Converting 'udps.n_bytes' column from str to list.
+        '''
+        # validate
+        assert 'udps.n_bytes' in dataframe.columns, "Column 'udps.n_bytes' not found."
+        assert isinstance(dataframe['udps.n_bytes'].iloc[0], str), "Values in column 'udps.n_bytes' are already processed."
+        
+        dataframe['udps.n_bytes'] = dataframe['udps.n_bytes'].apply(ast.literal_eval)
+        
         
