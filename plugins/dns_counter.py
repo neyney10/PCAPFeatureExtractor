@@ -1,6 +1,6 @@
 from nfstream import NFPlugin
 from scapy.all import IP, DNS, IPv6
-from ..stats.stats import IterableStats
+from stats.stats import IterableStats
 
 class DNSCounter(NFPlugin):
     '''
