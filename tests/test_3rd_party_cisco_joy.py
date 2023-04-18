@@ -1,8 +1,9 @@
 from nfstream.streamer import NFStreamer
 import unittest
 from os import path
+import os
 import sys
-sys.path.append('../')
+sys.path.append(os.getcwd())
 from tls_record_joy import TLSRecordJoy
 
 '''
@@ -16,8 +17,8 @@ from tls_record_joy import TLSRecordJoy
 class TestTLSRecordFeatures(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.pcap_filepath = './pcaps/tls_small_pkt_payload_ratio_single.pcap'
-        tls_joy = TLSRecordJoy(self.pcap_filepath, config_filepath=path.join('../tools','config.json'))
+        self.pcap_filepath = 'tests/pcaps/tls_small_pkt_payload_ratio_single.pcap'
+        tls_joy = TLSRecordJoy(self.pcap_filepath, config_filepath=path.join('tools','config.json'))
         self.joy_df = tls_joy.execute_joy(nfstream_sessions_df=None)
         
     @classmethod  

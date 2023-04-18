@@ -1,4 +1,4 @@
 {
-    "CiscoJoyPath": "/mnt/d/Program-Files/Cisco-Joy/joy/bin/joy",
+    "CiscoJoyPath": "/home/rock/Projects_others/joy/bin/joy",
     "tshark_location": "/usr/bin/tshark"
 }
