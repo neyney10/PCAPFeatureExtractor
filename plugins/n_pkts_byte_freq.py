@@ -1,6 +1,6 @@
 # used for byte frequency analysis
 
-from ..stats.stats import IterableStats, WeightedIterableStats
+from stats.stats import IterableStats, WeightedIterableStats
 from nfstream import NFPlugin
 import numpy as np # for bytes distribution
 

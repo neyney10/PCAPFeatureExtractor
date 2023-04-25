@@ -4,6 +4,8 @@ import pandas as pd
 import hashlib 
 import os
 import json
+import subprocess
+import gzip
 
 
 class TLSRecordJoy():
@@ -24,10 +26,19 @@ class TLSRecordJoy():
                                 'preemptive_timeout=0', 
                                 'bidir=1', 
                                 'tls=1', 
-                                'output='+self.output_filepath, 
-                                self.pcap_filepath])
-        print(joy_command)
+                                # 'output='+self.output_filepath, 
+                                self.pcap_filepath, '>', f'{self.output_filepath}.gz'])
+        print(joy_command)        
         res = os.system(joy_command)
+
+        with gzip.open(f'{self.output_filepath}.gz', 'rt') as fp:
+            data = fp.read() 
+            with open(self.output_filepath, 'w') as fp1:
+                fp1.write(data)
+
+        # proc = subprocess.Popen(joy_command, stdout=subprocess.PIPE, shell=True)
+        # (out, err) = proc.communicate()
+        # res, output = subprocess.getstatusoutput(joy_command)
         if res != 0 :
             raise Exception('[3rd-party tool] Cisco Joy didnt execute succesfully')
         
@@ -103,7 +114,8 @@ class TLSRecordJoy():
         extracted_tls_general_features = {
             'tls_cipher_suites': list(tls['cs']),
         }
-        
+
+       
         return extracted_tls_general_features
     
     def _extract_tls_clump_features(self, clumps):
@@ -305,6 +317,6 @@ class TLSRecordJoy():
 if __name__ == '__main__':
     print('starting')
     #df = pd.read_csv('./temp/out-sessions.csv')
-    merged_df = TLSRecordJoy(r'./pcaps/DoH-Firefox84-NextDNS-1-pcap-format.pcap').execute_joy()
+    merged_df = TLSRecordJoy(r'./pcaps/tls_small_pkt_payload_ratio_single.pcap').execute_joy()
     
     merged_df.to_csv('./temp/out-sessions-merged-with-tls.csv')
